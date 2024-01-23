@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "bdd-llm"
+version = "0.1.0"
+description = ""
+authors = ["Pedro Sousa <pedronsousa@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pytest = "^7.4.4"
+langchain = "^0.1.2"
+langchain-community = "^0.0.14"
+langchain-core = "^0.1.14"
+langchain-openai = "^0.0.3"
+langchainhub = "^0.1.14"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
