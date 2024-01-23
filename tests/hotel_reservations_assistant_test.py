@@ -1,7 +1,8 @@
 import datetime
 from unittest.mock import Mock
+from bdd_llm.llm_user import NORMAL_USER_PROMPT, LLMUser
 
-from bdd_llm.user import ConsoleUser, DeterministicUser, RegularUser, stop_condition
+from bdd_llm.user import ConsoleUser, DeterministicUser, stop_condition
 from hotel_reservations.assistant import HotelReservationsAssistant
 from hotel_reservations.core import make_reservation
 
@@ -20,7 +21,7 @@ def test_chat_assistant():
             "bye",
         ]
     )
-    user = RegularUser(query, metadata)
+    user = LLMUser(NORMAL_USER_PROMPT, query, metadata)
     make_reservation_mock = Mock(wraps=make_reservation)
     assistant = HotelReservationsAssistant(
         user_proxy=user,
@@ -32,7 +33,6 @@ def test_chat_assistant():
     assistant.start()
 
     ## Then
-    print("make_reservation_mock.call_args", make_reservation_mock.call_args)
     make_reservation_mock.assert_called_once_with(
         "Hotel UK 2",
         "Pedro Sousa",

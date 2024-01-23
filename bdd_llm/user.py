@@ -1,4 +1,4 @@
-from bdd_llm.user_agent import build_agent
+from abc import ABC, abstractmethod
 
 
 def stop_condition(response: dict) -> bool:
@@ -6,20 +6,9 @@ def stop_condition(response: dict) -> bool:
 
 
 class UserProxy:
-    pass
-
-
-class RegularUser(UserProxy):
-    def __init__(self, query, metadata):
-        self.query = query
-
-        self.agent = build_agent(query, metadata)
-
-    def get_input(self, output):
-        print("LLM: " + output)
-        response = self.agent.invoke({"input": output})
-        print("User response: " + response)
-        return response
+    @abstractmethod
+    def get_input(self, question: str):
+        pass
 
 
 class ConsoleUser(UserProxy):
@@ -27,8 +16,8 @@ class ConsoleUser(UserProxy):
         self.query = query
         self.metadata = metadata
 
-    def get_input(self, output):
-        print(output)
+    def get_input(self, question):
+        print(question)
         return input("You: ")
 
 
@@ -39,7 +28,7 @@ class DeterministicUser(UserProxy):
         self.metadata = metadata
         self.response_index = 0
 
-    def get_input(self, output):
+    def get_input(self, question):
         response = self.responses[self.response_index]
         self.response_index += 1
         return response

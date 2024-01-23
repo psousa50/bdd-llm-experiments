@@ -33,8 +33,8 @@ def find_hotels_tool(location: str) -> list[str]:
 class MakeReservationInput(BaseModel):
     hotel: str = Field(description="The hotel name.")
     guest_name: str = Field(description="The guest name.")
-    checkin: date = Field(description="The checkin date.")
-    checkout: date = Field(description="The checkout date.")
+    checkin: date = Field(description="The checkin date in the format YYYY-MM-DD.")
+    checkout: date = Field(description="The checkout date in the format YYYY-MM-DD.")
     guests: int = Field(description="The number of guests.")
 
 

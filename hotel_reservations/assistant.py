@@ -5,6 +5,7 @@ from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
+from bdd_llm.log import Log
 
 from bdd_llm.user import UserProxy
 from hotel_reservations.core import MakeReservation
@@ -19,28 +20,33 @@ class HotelReservationsAssistant:
         user_proxy: UserProxy,
         make_reservation: MakeReservation,
         stop_condition: StopCondition = lambda _: False,
+        max_iterations: int = 5,
     ):
         self.user_proxy = user_proxy
         self.make_reservation = make_reservation
         self.stop_condition = stop_condition
+        self.max_iterations = max_iterations
 
+        self.log = Log("HotelReservationsAssistant")
         self.agent = self.build_agent()
 
     def start(self):
-        print("Welcome to the Hotel Reservations Assistant!", flush=True)
         query = self.user_proxy.query
-        print("You: " + query, flush=True)
         if query == "":
             query = self.user_proxy.get_input("How can I help you?")
-        print("You2: " + query, flush=True)
         done = False
+        iterations = 0
         while not done:
             response = self.agent.invoke(
                 {"input": query},
                 config={"configurable": {"session_id": "<foo>"}},
             )
-            print(f"RESPONSE: {response}", flush=True)
-            done = self.stop_condition(response)
+            self.log("RESPONSE", response)
+            iterations += 1
+            if iterations >= self.max_iterations:
+                query = "I'm sorry, I can't help you with that."
+                done = True
+            done = done or self.stop_condition(response)
             if not done:
                 output = response["output"]
                 query = self.user_proxy.get_input(output)
