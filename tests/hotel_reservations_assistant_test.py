@@ -1,40 +1,47 @@
 import datetime
-from unittest.mock import Mock
+
+
 from bdd_llm.llm_user import NORMAL_USER_PROMPT, LLMUser
-
-from bdd_llm.user import ConsoleUser, DeterministicUser, stop_condition
+from bdd_llm.log import Log
+from bdd_llm.mocks import create_mock
+from bdd_llm.runners import UserConversation
 from hotel_reservations.assistant import HotelReservationsAssistant
-from hotel_reservations.core import make_reservation
+from hotel_reservations.core import find_hotels, make_reservation
+from hotel_reservations.dependencies import (
+    HotelReservationsAssistantDependencies,
+    current_date,
+)
+
+Log.set_verbose(False)
 
 
-def test_chat_assistant():
+def test__query_with_all_the_information():
     ## Given
     metadata = {
         "name": "Pedro Sousa",
     }
-    query = "My name is Pedro Sousa. I want to book a room in London, for 3 days, starting 12 Feb of 2024. It's for two guests"
-    user = ConsoleUser()
-    user = DeterministicUser(
-        [
-            query,
-            "2",
-            "bye",
-        ]
+    query = "My name is Pedro Sousa. I want to book a room in Hotel Palace, for 3 days, starting 12 Feb of 2024. It's for two guests"
+    llmUser = LLMUser(NORMAL_USER_PROMPT, query, metadata)
+
+    dependencies = HotelReservationsAssistantDependencies(
+        find_hotels=create_mock(find_hotels, return_value=["H1", "H2", "H3"]),
+        make_reservation=create_mock(make_reservation),
+        current_date=create_mock(current_date),
     )
-    user = LLMUser(NORMAL_USER_PROMPT, query, metadata)
-    make_reservation_mock = Mock(wraps=make_reservation)
-    assistant = HotelReservationsAssistant(
-        user_proxy=user,
-        make_reservation=make_reservation_mock,
-        stop_condition=stop_condition,
-    )
+    assistant = HotelReservationsAssistant(dependencies)
 
     ## When
-    assistant.start()
+    conversation = UserConversation(
+        user=llmUser,
+        assistant=lambda query: assistant.invoke(query),
+        stop_condition=lambda: dependencies.make_reservation.called,
+        max_iterations=5,
+    )
+    conversation.start_conversation(query)
 
     ## Then
-    make_reservation_mock.assert_called_once_with(
-        "Hotel UK 2",
+    dependencies.make_reservation.assert_called_once_with(
+        "Hotel Palace",
         "Pedro Sousa",
         datetime.date(2024, 2, 12),
         datetime.date(2024, 2, 15),

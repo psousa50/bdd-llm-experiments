@@ -19,8 +19,12 @@ def stop_condition(response: dict) -> bool:
 
 
 def start():
-    user = ConsoleUser()
     query = "I want to book a room in London"
+    metadata = {
+        "name": "Pedro Sousa",
+    }
+    user = LLMUser(NORMAL_USER_PROMPT, query, metadata)
+    user = ConsoleUser()
     user = DeterministicUser(
         [
             query,
@@ -28,16 +32,13 @@ def start():
             "bye",
         ]
     )
-    metadata = {
-        "name": "Pedro Sousa",
-    }
-    user = LLMUser(NORMAL_USER_PROMPT, query, metadata)
-    assistant = HotelReservationsAssistant(
-        user_proxy=user,
-        make_reservation=make_reservation,
-        stop_condition=stop_condition,
-    )
-    assistant.start()
+
+    assistant = HotelReservationsAssistant()
+
+    done = False
+    while not done:
+        response = assistant.invoke(query)
+        query = user.get_input(response)
 
 
 if __name__ == "__main__":

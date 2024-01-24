@@ -1,10 +1,6 @@
 from abc import ABC, abstractmethod
 
 
-def stop_condition(response: dict) -> bool:
-    return response["input"].lower() == "bye"
-
-
 class UserProxy:
     @abstractmethod
     def get_input(self, question: str):
@@ -16,8 +12,7 @@ class ConsoleUser(UserProxy):
         self.query = query
         self.metadata = metadata
 
-    def get_input(self, question):
-        print(question)
+    def get_input(self, response):
         return input("You: ")
 
 
@@ -29,6 +24,10 @@ class DeterministicUser(UserProxy):
         self.response_index = 0
 
     def get_input(self, question):
-        response = self.responses[self.response_index]
+        response = (
+            self.responses[self.response_index]
+            if self.response_index < len(self.responses)
+            else ""
+        )
         self.response_index += 1
         return response

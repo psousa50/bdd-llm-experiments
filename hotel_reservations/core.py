@@ -3,9 +3,11 @@ from typing import Callable
 
 from bdd_llm.log import Log
 
-MakeReservation = Callable[[str, str, date, date, int], bool]
 
 log = Log("make_reservation function")
+
+MakeReservation = Callable[[str, str, date, date, int], bool]
+FindHotels = Callable[[str], list[str]]
 
 
 def make_reservation(
@@ -15,3 +17,11 @@ def make_reservation(
         f"Making reservation for {guest_name} in {hotel} from {start_date} to {end_date} for {guests} guests"
     )
     return True
+
+
+def find_hotels(location: str) -> list[str]:
+    hotels = {
+        "London": ["Hotel UK 1", "Hotel UK 2", "Hotel UK 3"],
+        "Paris": ["Hotel France 1", "Hotel France 2", "Hotel France 3"],
+    }
+    return hotels[location]
