@@ -3,10 +3,12 @@ import logging
 from langchain import hub
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
 
+from hotel_reservations.callbacks import LLMStartHandler
 from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
 
 logger = logging.getLogger(__name__)
@@ -22,11 +24,15 @@ class HotelReservationsAssistant:
         self.verbose = verbose
 
         self.agent = self.build_agent(dependencies)
+        self.handler = LLMStartHandler()
 
     def invoke(self, query: str, session_id: str = "foo"):
         response = self.agent.invoke(
             {"input": query},
-            config={"configurable": {"session_id": session_id}},
+            config={
+                "configurable": {"session_id": session_id},
+                "callbacks": [self.handler],
+            },
         )
         logger.debug(f"LLM Response: {response}")
         return response
@@ -34,7 +40,20 @@ class HotelReservationsAssistant:
     def build_agent(self, dependencies: HotelReservationsAssistantDependencies):
         model = ChatOpenAI(model="gpt-4", temperature=0.0)
         tools = self.build_tools(dependencies)
-        prompt = hub.pull("hwchase17/openai-functions-agent")
+        # prompt = hub.pull("hwchase17/openai-functions-agent")
+        system_prompt = """
+        You have a list of tools that you can use to help you make a reservation. You should NEVER try to guess any information that you can ask the user for."
+        """
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("user", "{input}"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ]
+        )
+
+        logger.info(f"Prompt: {prompt}")
         agent = create_openai_functions_agent(model, tools, prompt)
 
         message_history = ChatMessageHistory()
