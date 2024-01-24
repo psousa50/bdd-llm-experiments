@@ -1,11 +1,8 @@
 import datetime
-import logging
-from unittest.mock import create_autospec
 
-import pytest
 from bdd_llm.llm_user import LLMUser
 
-from bdd_llm.mocks import create_mock, wrap
+from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
 from bdd_llm.user import DeterministicUser
 from hotel_reservations.assistant import HotelReservationsAssistant
@@ -39,18 +36,21 @@ def create_test_conversation(
 
 
 def test_query_with_all_the_information():
-    ## Given
-    query = "My name is Pedro Sousa. I want to book a room in Hotel Palace, for 3 days, starting 12 Feb of 2024. It's for two guests"
+    # Given
+    query = """My name is Pedro Sousa.
+    I want to book a room in Hotel Palace, for 3 days, starting 12 Feb of 2024.
+    It's for two guests
+    """
     user = DeterministicUser(
         [
             query,
         ]
     )
-    ## When
+    # When
     conversation, dependencies = create_test_conversation(user)
     conversation.start_conversation(query)
 
-    ## Then
+    # Then
     dependencies.make_reservation.assert_called_once_with(
         "Hotel Palace",
         "Pedro Sousa",
@@ -61,58 +61,27 @@ def test_query_with_all_the_information():
 
 
 def test_query_with_no_information():
-    ## Given
+    # Given
     query = "I want to book a room"
     metadata = {
         "name": "Pedro Sousa",
     }
     persona = """
     You're a dumb user who tries to answer the LLM's questions as best as you can.
-    What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024. It's for five guests.
+    What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024.
+    It's for five guests.
     You cannot answer more than one question at a time.
     Sometimes you forget what you want and need time to think.
     """
     user = LLMUser(query, persona, metadata)
 
-    ## When
+    # When
     conversation, dependencies = create_test_conversation(
         user, find_hotels_return_value=["H1", "H2", "H3"]
     )
     conversation.start_conversation(query)
 
-    ## Then
-    dependencies.find_hotels.assert_called_once_with("Paris")
-
-    dependencies.make_reservation.assert_called_once_with(
-        "H3",
-        "Pedro Sousa",
-        datetime.date(2024, 3, 12),
-        datetime.date(2024, 3, 15),
-        5,
-    )
-
-
-def test_query_with_no_information():
-    ## Given
-    query = "I want to book a room"
-    metadata = {
-        "name": "Pedro Sousa",
-    }
-    persona = """
-    You're a dumb user who tries to answer the LLM's questions as best as you can.
-    What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024. It's for five guests.
-    You cannot answer more than one question at a time.
-    Sometimes you forget what you want and need time to think.
-    """
-    user = LLMUser(query, persona, metadata)
-
-    ## When
-    conversation, dependencies = create_test_conversation(
-        user, find_hotels_return_value=["H1", "H2", "H3"]
-    )
-    conversation.start_conversation(query)
-
-    ## Then
+    # Then
     dependencies.find_hotels.assert_called_once_with("Paris")
 
     dependencies.make_reservation.assert_called_once_with(
@@ -125,7 +94,7 @@ def test_query_with_no_information():
 
 
 def test_should_give_up():
-    ## Given
+    # Given
     query = "My name is Pedro Sousa. I want to book a room in Hotel Palace, for 3 days, starting 12 Feb of 2024"
     metadata = {
         "name": "Pedro Sousa",
@@ -135,7 +104,7 @@ def test_should_give_up():
     """
     user = LLMUser(query, persona, metadata)
 
-    ## When
+    # When
     conversation, dependencies = create_test_conversation(
         user,
         find_hotels_return_value=["H1", "H2", "H3"],
@@ -143,5 +112,5 @@ def test_should_give_up():
     )
     conversation.start_conversation(query)
 
-    ## Then
+    # Then
     dependencies.make_reservation.assert_not_called()

@@ -20,11 +20,13 @@ def start():
     """
     persona = """
     You're an arrogant user that sometimes get's fed up with the LLM's questions.
-    What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024. It's for five guests.
+    What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024.
+    It's for five guests.
     """
     persona = """
     You're a dumb user who tries to answer the LLM's questions as best as you can.
-    What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024. It's for five guests.
+    What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024.
+    It's for five guests.
     You cannot answer more than one question at a time.
     Sometimes you forget what you want and need time to think.
     """

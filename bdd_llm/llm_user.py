@@ -52,15 +52,15 @@ BASE_USER_PROMPT = """
     Here is some information about you:
     {metadata}
 
-    This is how you should behave:    
+    This is how you should behave:
     {persona}
-    
+
     This is the task that you asked the LLM to do:
     {query}
-    
+
     When the LLM finishes the task, it will not ask a question, it will just give you the result.
     You should then say "bye" to the LLM to end the conversation.
-    
+
     Here is the LLM Question:
 
     {{input}}

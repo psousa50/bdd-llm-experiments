@@ -1,5 +1,4 @@
 from colorama import Fore
-from dataclasses import dataclass
 from typing import Callable
 import logging
 from bdd_llm.user import UserProxy
