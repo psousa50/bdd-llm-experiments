@@ -1,25 +1,26 @@
 import json
+import logging
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from bdd_llm.log import Log
 
 from bdd_llm.user import UserProxy
+
+logger = logging.getLogger(__name__)
 
 
 class LLMUser(UserProxy):
     def __init__(self, system_prompt, query, metadata={}):
         self.system_prompt = system_prompt
         self.metadata = metadata
-        self.log = Log("LLMUser")
 
         self.agent = self.build_agent(query, metadata)
 
     def get_input(self, question):
-        self.log.verbose("User question", question)
+        logger.info(f"User question: {question}")
         response = self.agent.invoke({"input": question})
-        self.log.verbose("User response", response)
+        logger.info(f"User response: {response}")
         return response
 
     def build_agent(self, query, user_metadata: dict = {}):
@@ -28,7 +29,7 @@ class LLMUser(UserProxy):
             metadata=json.dumps(user_metadata).replace("{", "").replace("}", ""),
         )
 
-        self.log.verbose("System Prompt", system_prompt)
+        logger.info(f"System Prompt: {system_prompt}")
 
         prompt = ChatPromptTemplate.from_messages(
             [

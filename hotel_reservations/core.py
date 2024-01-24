@@ -1,10 +1,8 @@
+import logging
 from datetime import date
 from typing import Callable
 
-from bdd_llm.log import Log
-
-
-log = Log("make_reservation function")
+logger = logging.getLogger(__name__)
 
 MakeReservation = Callable[[str, str, date, date, int], bool]
 FindHotels = Callable[[str], list[str]]
@@ -13,7 +11,7 @@ FindHotels = Callable[[str], list[str]]
 def make_reservation(
     hotel: str, guest_name: str, start_date: date, end_date: date, guests: int
 ):
-    log(
+    logger.info(
         f"Making reservation for {guest_name} in {hotel} from {start_date} to {end_date} for {guests} guests"
     )
     return True

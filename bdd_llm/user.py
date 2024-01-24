@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class UserProxy:
+class UserProxy(ABC):
     @abstractmethod
     def get_input(self, question: str):
         pass

@@ -2,7 +2,6 @@ import datetime
 
 
 from bdd_llm.llm_user import NORMAL_USER_PROMPT, LLMUser
-from bdd_llm.log import Log
 from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
 from hotel_reservations.assistant import HotelReservationsAssistant
@@ -11,8 +10,6 @@ from hotel_reservations.dependencies import (
     HotelReservationsAssistantDependencies,
     current_date,
 )
-
-Log.set_verbose(False)
 
 
 def test__query_with_all_the_information():

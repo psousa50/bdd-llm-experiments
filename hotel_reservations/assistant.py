@@ -1,3 +1,5 @@
+import logging
+
 from langchain import hub
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain_community.chat_message_histories import ChatMessageHistory
@@ -5,8 +7,9 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
 
-from bdd_llm.log import Log
 from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
+
+logger = logging.getLogger(__name__)
 
 
 class HotelReservationsAssistant:
@@ -15,9 +18,9 @@ class HotelReservationsAssistant:
         dependencies=HotelReservationsAssistantDependencies(),
         verbose=False,
     ):
+        self.dependencies = dependencies
         self.verbose = verbose
 
-        self.log = Log("HotelReservationsAssistant")
         self.agent = self.build_agent(dependencies)
 
     def invoke(self, query: str, session_id: str = "foo"):
@@ -25,7 +28,7 @@ class HotelReservationsAssistant:
             {"input": query},
             config={"configurable": {"session_id": session_id}},
         )
-        self.log.verbose("RESPONSE", response)
+        logger.info(f"RESPONSE: {response}")
         return response
 
     def build_agent(self, dependencies: HotelReservationsAssistantDependencies):
