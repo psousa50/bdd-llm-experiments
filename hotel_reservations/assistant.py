@@ -99,4 +99,5 @@ class HotelReservationsAssistant:
 SYSTEM_PROMPT = """
 You have a list of tools that you can use to help you make a reservation.
 You should NEVER try to guess any information that you can ask the user for.
+if you realize that you cannot make the reservation, you should say it.
 """
