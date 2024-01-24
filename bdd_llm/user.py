@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import logging
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class UserProxy(ABC):
@@ -32,5 +33,6 @@ class DeterministicUser(UserProxy):
             if self.response_index < len(self.responses)
             else ""
         )
+        logger.info(f"User response: {response}")
         self.response_index += 1
         return response

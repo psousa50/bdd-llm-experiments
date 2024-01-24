@@ -28,7 +28,7 @@ class HotelReservationsAssistant:
             {"input": query},
             config={"configurable": {"session_id": session_id}},
         )
-        logger.info(f"RESPONSE: {response}")
+        logger.debug(f"LLM Response: {response}")
         return response
 
     def build_agent(self, dependencies: HotelReservationsAssistantDependencies):

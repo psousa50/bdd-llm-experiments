@@ -15,7 +15,7 @@ class UserConversation:
         assistant: Assistant,
         user: UserProxy,
         stop_condition: Callable[[], bool] = lambda: False,
-        max_iterations: int = 10,
+        max_iterations: int = 200,
     ):
         self.assistant = assistant
         self.user = user

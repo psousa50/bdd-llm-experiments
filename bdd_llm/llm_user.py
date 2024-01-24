@@ -2,7 +2,7 @@ import json
 import logging
 
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_openai import ChatOpenAI
 
 from bdd_llm.user import UserProxy
@@ -11,11 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class LLMUser(UserProxy):
-    def __init__(self, system_prompt, query, metadata={}):
-        self.system_prompt = system_prompt
-        self.metadata = metadata
-
-        self.agent = self.build_agent(query, metadata)
+    def __init__(self, query, persona, metadata={}):
+        self.agent = self.build_agent(query, persona, metadata)
 
     def get_input(self, question):
         logger.info(f"User question: {question}")
@@ -23,10 +20,12 @@ class LLMUser(UserProxy):
         logger.info(f"User response: {response}")
         return response
 
-    def build_agent(self, query, user_metadata: dict = {}):
-        system_prompt = self.system_prompt.format(
+    def build_agent(self, query, persona, metadata):
+        template = PromptTemplate.from_template(BASE_USER_PROMPT)
+        system_prompt = template.format(
             query=query,
-            metadata=json.dumps(user_metadata).replace("{", "").replace("}", ""),
+            persona=persona,
+            metadata=json.dumps(metadata).replace("{", "").replace("}", ""),
         )
 
         logger.info(f"System Prompt: {system_prompt}")
@@ -48,6 +47,7 @@ class LLMUser(UserProxy):
 
 BASE_USER_PROMPT = """
     Your role is to simulate a user that asked an LLM to do a task. Remember, you are not the LLM, you are the user.
+    User your metadata to answer the questions. If you don't know the answer, just say "I don't know".
 
     Here is some information about you:
     {metadata}
@@ -65,18 +65,3 @@ BASE_USER_PROMPT = """
 
     {{input}}
     """
-
-NORMAL_USER = "NORMAL_USER"
-NORMAL_USER_PERSONA = """
-    Sometimes the LLM assistant needs to ask you a question to be able to complete the task. Please answer the question.
-    If the question is about making a choice, choose a random option.
-"""
-
-DUMB_USER = "DUMB_USER"
-DUMB_USER_PERSONA = """
-    Sometimes the LLM assistant needs to ask you a question to be able to complete the task.
-    You should always answer "I don't know" to the question.
-"""
-
-NORMAL_USER_PROMPT = BASE_USER_PROMPT.replace("{persona}", NORMAL_USER_PERSONA)
-DUMB_USER_PROMPT = BASE_USER_PROMPT.replace("{persona}", DUMB_USER_PERSONA)

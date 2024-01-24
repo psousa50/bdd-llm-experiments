@@ -9,10 +9,10 @@ FindHotels = Callable[[str], list[str]]
 
 
 def make_reservation(
-    hotel: str, guest_name: str, start_date: date, end_date: date, guests: int
+    hotel: str, guest_name: str, checkin_date: date, checkout_date: date, guests: int
 ):
     logger.info(
-        f"Making reservation for {guest_name} in {hotel} from {start_date} to {end_date} for {guests} guests"
+        f"Making reservation for {guest_name} in {hotel} from {checkin_date} to {checkout_date} for {guests} guests"
     )
     return True
 
