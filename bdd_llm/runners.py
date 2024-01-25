@@ -15,27 +15,33 @@ class UserConversation:
         user: UserProxy,
         stop_condition: Callable[[], bool] = lambda: False,
         max_iterations: int = 200,
+        options={},
     ):
         self.assistant = assistant
         self.user = user
         self.stop_condition = stop_condition
         self.max_iterations = max_iterations
+        self.options = options
 
         self.chat_log = []
 
     def start_conversation(self, query: str):
-        logger.info("Starting conversation")
+        log_input = f"{Fore.YELLOW}{query}{Fore.RESET}"
+        self.log_message(log_input)
         user_response = query
         iterations = 0
         done = False
         while not done:
             llm_response = self.assistant(user_response)
             user_response = self.user.get_input(llm_response)
-            logger.info(f"LLM Response: {llm_response}")
-            logger.info(f"User Response: {user_response}")
-            self.chat_log.append(
-                f"{Fore.GREEN}LLM:{Fore.RESET}\n{llm_response['output']}"
-            )
-            self.chat_log.append(f"{Fore.CYAN}User:{Fore.RESET}\n{user_response}")
+            log_llm_response = f"{Fore.GREEN}{llm_response['output']}{Fore.RESET}"
+            log_user_response = f"{Fore.CYAN}{user_response}{Fore.RESET}"
+            self.log_message(log_llm_response)
+            self.log_message(log_user_response)
             iterations += 1
             done = iterations >= self.max_iterations or self.stop_condition()
+
+    def log_message(self, message: str):
+        if self.options.get("verbose", False):
+            print(message)
+        self.chat_log.append(message)

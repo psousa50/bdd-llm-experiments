@@ -22,4 +22,4 @@ def find_hotels(location: str) -> list[str]:
         "London": ["Hotel UK 1", "Hotel UK 2", "Hotel UK 3"],
         "Paris": ["Hotel France 1", "Hotel France 2", "Hotel France 3"],
     }
-    return hotels[location]
+    return hotels[location] if location in hotels else []

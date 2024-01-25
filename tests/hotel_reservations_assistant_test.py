@@ -4,7 +4,6 @@ from bdd_llm.llm_user import LLMUser
 
 from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
-from bdd_llm.user import DeterministicUser
 from hotel_reservations.assistant import HotelReservationsAssistant
 from hotel_reservations.core import find_hotels, make_reservation
 from hotel_reservations.dependencies import (
@@ -51,10 +50,9 @@ def test_query_with_all_the_information():
     conversation, dependencies = create_test_conversation(user)
     conversation.start_conversation(query)
 
+    # Then
     dependencies.find_hotels.assert_not_called()
     dependencies.current_date.assert_not_called()
-
-    # Then
     dependencies.make_reservation.assert_called_once_with(
         "Hotel Palace",
         "Pedro Sousa",
@@ -71,6 +69,8 @@ def test_query_with_no_information():
         "name": "Pedro Sousa",
     }
     persona = """
+    You're a helpful user who tries to answer the LLM's questions as best as you can.
+    Your goal is to book a room in Hotel Palace, starting tomorrow, for 3 days. It's for two guests
     You're a dumb user who tries to answer the LLM's questions as best as you can.
     What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024.
     It's for five guests.
@@ -123,15 +123,20 @@ def test_should_give_up():
 def test_figure_it_out():
     # Given
     query = """
-    My name is Pedro Sousa. I want to book a room in London, for 3 days, starting tomorrow.
-    The hotel name is Plaza something...
-    It will be for my wife and our two kids.
+    I want to book a room
     """
     metadata = {
         "name": "Pedro Sousa",
     }
     persona = """
     You're a nice and helpful user who tries to answer the LLM's questions as best as you can.
+    This is some information about you:
+
+    My name is Pedro Sousa.
+    I want to book a room in London, for 3 days, starting tomorrow.
+    The hotel name is Plaza something...
+    It will be for my wife and our two kids.
+
     """
     user = LLMUser(query, persona, metadata)
 
@@ -144,9 +149,12 @@ def test_figure_it_out():
             "Park Plaza Westminster Bridge London",
         ],
         current_date_return_value=datetime.date(2021, 1, 1),
-        max_iterations=2,
     )
     conversation.start_conversation(query)
+
+    print(query)
+    for log in conversation.chat_log:
+        print(log)
 
     # Then
     dependencies.find_hotels.assert_called_once_with("London")
