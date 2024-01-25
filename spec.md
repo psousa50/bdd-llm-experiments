@@ -1,15 +1,14 @@
 # Specs
 
-#Given
+## Given
 
-My name is Pedro Sousa
-I want to make a reservation for Hotel Palace, for 2 people, starting on 10/10/2024 and ending on 12/10/2024.
+My name is Pedro Sousa and I want to make a reservation for Hotel Palace, for 2 people, starting on 10/10/2024 and ending on 12/10/2024.
 
-#When
+## When
 
 I ask for a reservation to my assistant
 
-#Then
+## Then
 
 My assistant should make a reservation with the following data:
 
