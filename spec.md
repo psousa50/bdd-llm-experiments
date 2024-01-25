@@ -1,16 +1,13 @@
 # Specs
 
-## Given
+## Scenario
 
-My name is Pedro Sousa and I want to make a reservation for Hotel Palace, for 2 people, starting on 10/10/2024 and ending on 12/10/2024.
+Given A user that wants to make a reservation in a hotel
+  And The user behaves like a normal person
 
-## When
+When The user asks for a reservation to the assistant
 
-I ask for a reservation to my assistant
-
-## Then
-
-My assistant should make a reservation with the following data:
+Then My assistant should make a reservation with the following data:
 
 - hotel: Hotel Palace
 - name: Pedro Sousa

@@ -42,14 +42,17 @@ def test_query_with_all_the_information():
     I want to book a room in Hotel Palace, for 3 days, starting 12 Feb of 2024.
     It's for two guests
     """
-    user = DeterministicUser(
-        [
-            query,
-        ]
-    )
+    metadata = {}
+    persona = """
+    You're a nice user who tries to answer the LLM's questions as best as you can.
+    """
+    user = LLMUser(query, persona, metadata)
     # When
     conversation, dependencies = create_test_conversation(user)
     conversation.start_conversation(query)
+
+    dependencies.find_hotels.assert_not_called()
+    dependencies.current_date.assert_not_called()
 
     # Then
     dependencies.make_reservation.assert_called_once_with(
