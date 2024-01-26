@@ -10,24 +10,13 @@ from hotel_reservations.dependencies import HotelReservationsAssistantDependenci
 
 
 def start():
-    goal = "Book a room in in an Hotel in London, for 3 days, starting tomorrow, for two guests Price should be less than 20"  # noqa E501
-    metadata = {
-        "name": "Pedro Sousa",
-    }
-    persona = """
-    You're a helpful user who tries to answer the LLM's questions as best as you can.
-    """
-    # persona = """
-    # You're an arrogant user that sometimes get's fed up with the LLM's questions.
-    # What you really want is to book a room in Hotel H3, in Paris, for 3 days, starting 12 Mar of 2024.
-    # It's for five guests.
-    # """
-    # persona = """
-    # You're a dumb user who tries to answer the LLM's questions as best as you can.
-    # You cannot answer more than one question at a time.
-    # Sometimes you don't understand the question and ask to repeat it.
-    # """
-    user = LLMUser(goal, persona, metadata)
+    user = LLMUser(
+        goal="Book a room in a London Hotel, starting in 3 of February, for 3 days, for two guests. I prefer hotel UK 2",  # noqa E501
+        persona="A helpful user",
+        metadata={
+            "name": "Pedro Sousa",
+        },
+    )
 
     wrapped_make_reservation = create_mock(make_reservation)
 
@@ -55,5 +44,5 @@ def bye(state):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    # logging.basicConfig(level=logging.INFO)
     start()

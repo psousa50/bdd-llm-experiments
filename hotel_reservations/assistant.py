@@ -1,16 +1,16 @@
 import logging
 
-from langchain.agents import AgentExecutor, create_openai_functions_agent
-from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain.agents import AgentExecutor
+from langchain.agents.format_scratchpad import format_to_openai_function_messages
+from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
+from langchain_community.tools.convert_to_openai import format_tool_to_openai_function
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
 
 from hotel_reservations.callbacks import LLMStartHandler
-from hotel_reservations.dependencies import (
-    HotelReservationsAssistantDependencies,
-)
+from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
 
 logger = logging.getLogger(__name__)
 
@@ -25,16 +25,22 @@ class HotelReservationsAssistant:
         self.verbose = verbose
 
         self.agent = self.build_agent(dependencies)
+        self.chat_history = []
         self.handler = LLMStartHandler()
 
     def invoke(self, query: str, session_id: str = "foo"):
         response = self.agent.invoke(
-            {"input": query},
+            {"input": query, "chat_history": self.chat_history},
             config={
                 "configurable": {"session_id": session_id},
                 "callbacks": [self.handler],
             },
         )
+        fm = format_to_openai_function_messages(response["intermediate_steps"])
+        self.chat_history.append(HumanMessage(content=query))
+        self.chat_history.extend(fm)
+        self.chat_history.append(AIMessage(content=response["output"]))
+
         logger.debug(f"LLM Response: {response}")
         return response
 
@@ -42,7 +48,11 @@ class HotelReservationsAssistant:
         self,
         dependencies: HotelReservationsAssistantDependencies,
     ):
-        model = ChatOpenAI(model="gpt-4", temperature=0.0)
+        llm = ChatOpenAI(
+            model="gpt-4",
+            temperature=0.0,
+            openai_api_base="http://localhost:8000",
+        )
         tools = self.build_tools(dependencies)
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -54,30 +64,46 @@ class HotelReservationsAssistant:
         )
 
         logger.info(f"Prompt: {prompt}")
-        agent = create_openai_functions_agent(model, tools, prompt)
+        llm_with_tools = llm.bind(
+            functions=[format_tool_to_openai_function(t) for t in tools]
+        )
+        agent = (
+            {
+                "input": lambda x: x["input"],
+                "agent_scratchpad": lambda x: format_to_openai_function_messages(
+                    x["intermediate_steps"]
+                ),
+                "chat_history": lambda x: x["chat_history"],
+            }
+            | prompt
+            | llm_with_tools
+            | OpenAIFunctionsAgentOutputParser()
+        )
 
-        message_history = ChatMessageHistory()
         agent_executor = AgentExecutor(
             agent=agent,
             tools=tools,
-            verbose=self.verbose,
             return_intermediate_steps=True,
+            verbose=self.verbose,
         )
 
-        agent_with_chat_history = RunnableWithMessageHistory(
-            agent_executor,
-            lambda session_id: message_history,
-            input_messages_key="input",
-            history_messages_key="chat_history",
-        )
-
-        return agent_with_chat_history
+        return agent_executor
 
     def build_tools(
         self,
         dependencies: HotelReservationsAssistantDependencies,
     ):
         tools = [
+            StructuredTool.from_function(
+                func=dependencies.current_date,
+                name="current_date",
+                description="Useful to get the current date.",
+            ),
+            StructuredTool.from_function(
+                func=dependencies.current_year,
+                name="current_year",
+                description="Useful to find the current year.",
+            ),
             StructuredTool.from_function(
                 func=dependencies.find_hotels,
                 name="find_hotels",
@@ -93,11 +119,6 @@ class HotelReservationsAssistant:
                 name="calc_reservation_price",
                 description="Useful to calculate the price of a reservation.",
             ),
-            StructuredTool.from_function(
-                func=dependencies.current_date,
-                name="current_date",
-                description="Useful to get the current date.",
-            ),
         ]
         return tools
 
@@ -106,8 +127,10 @@ SYSTEM_PROMPT = """
 You have a list of tools that you can use to help you make a reservation.
 Don't EVER call the same tool twice with the same arguments, the response will ALWAYS be the same.
 You should ask the user for the information needed to make the reservation, don't guess it.
-Always use a tool to get the current date, don't assume it.
+If a date is provided without a year, you should use a tool to find the current year.
+If you need to find out the current date, you should use a tool to get it.
 The name of the guest is mandatory to make the reservation.
+If should try to find out what's the current year, don't assume it.
 if you realize that you cannot make the reservation, you should say it.
 When you have all the information needed to make the reservation, show the user the reservation details, including the price and ask for confirmation.
 If the user confirms, make the reservation.

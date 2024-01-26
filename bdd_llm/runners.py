@@ -51,6 +51,9 @@ class UserConversation:
             state = UserConversationState(self.chat_history)
             done = iterations >= self.max_iterations or self.stop_condition(state)
 
+    def last_assistant_message(self):
+        return [m for m in self.chat_history if isinstance(m, AssistantMessage)][-1]
+
     def log_message(self, message: ChatMessage):
         if self.options.get("verbose", False):
             print(message)
