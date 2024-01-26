@@ -81,7 +81,7 @@ class HotelReservationsAssistant:
             StructuredTool.from_function(
                 func=dependencies.find_hotels,
                 name="find_hotels",
-                description="Useful to find hotels near a location.",
+                description="Useful to find hotels by name and/or location.",
             ),
             StructuredTool.from_function(
                 func=dependencies.make_reservation,
@@ -105,7 +105,9 @@ class HotelReservationsAssistant:
 SYSTEM_PROMPT = """
 You have a list of tools that you can use to help you make a reservation.
 Don't EVER call the same tool twice with the same arguments, the response will ALWAYS be the same.
-You should NEVER try to guess any information needed to make a reservation.
+You should ask the user for the information needed to make the reservation, don't guess it.
+Always use a tool to get the current date, don't assume it.
+The name of the guest is mandatory to make the reservation.
 if you realize that you cannot make the reservation, you should say it.
 When you have all the information needed to make the reservation, show the user the reservation details, including the price and ask for confirmation.
 If the user confirms, make the reservation.

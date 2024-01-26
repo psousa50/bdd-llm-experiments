@@ -1,3 +1,6 @@
+import json
+
+from dataclasses import dataclass
 import logging
 from datetime import date
 import random
@@ -10,27 +13,52 @@ CalcReservationPrice = Callable[[str, date, date, int], int]
 FindHotels = Callable[[str], list[str]]
 
 
+@dataclass
+class Hotel:
+    id: int
+    name: str
+    location: str
+
+    def __str__(self):
+        return json.dumps(self.__dict__, indent=4)
+
+    def __repr__(self):
+        return str(self)
+
+
+hotels = [
+    Hotel(1, "Hotel UK 1", "London"),
+    Hotel(2, "Hotel UK 2", "London"),
+    Hotel(3, "Hotel UK 3", "London"),
+    Hotel(4, "Hotel France 1", "Paris"),
+    Hotel(5, "Hotel France 2", "Paris"),
+]
+
+
 def make_reservation(
-    hotel: str, guest_name: str, checkin_date: date, checkout_date: date, guests: int
+    hotel_id: int,
+    guest_name: str,
+    checkin_date: date,
+    checkout_date: date,
+    guests: int,
 ):
     logger.info(
-        f"Making reservation for {guest_name} in {hotel} from {checkin_date} to {checkout_date} for {guests} guests"
+        f"Making reservation for {guest_name} in {hotel_id} from {checkin_date} to {checkout_date} for {guests} guests"
     )
     return True
 
 
 def calc_reservation_price(
-    hotel: str, checkin_date: date, checkout_date: date, guests: int
+    hotel_id: int, checkin_date: date, checkout_date: date, guests: int
 ):
     logger.info(
-        f"Calculating reservation price for {hotel} from {checkin_date} to {checkout_date} for {guests} guests"
+        f"Calculating reservation price for {hotel_id} from {checkin_date} to {checkout_date} for {guests} guests"
     )
     return random.randint(100, 1000)
 
 
-def find_hotels(location: str) -> list[str]:
-    hotels = {
-        "London": ["Hotel UK 1", "Hotel UK 2", "Hotel UK 3"],
-        "Paris": ["Hotel France 1", "Hotel France 2", "Hotel France 3"],
-    }
-    return hotels[location] if location in hotels else []
+def find_hotels(name: str = "", location: str = "") -> list[Hotel]:
+    logger.info(f"Finding hotels with name {name} and location {location}")
+    return [
+        hotel for hotel in hotels if name in hotel.name and location in hotel.location
+    ]

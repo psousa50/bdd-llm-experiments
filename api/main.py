@@ -3,7 +3,7 @@ from hotel_reservations.assistant import HotelReservationsAssistant
 
 app = FastAPI()
 
-assistant = HotelReservationsAssistant()
+assistant = HotelReservationsAssistant(verbose=True)
 
 
 @app.get("/hello/")

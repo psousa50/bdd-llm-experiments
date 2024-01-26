@@ -6,6 +6,7 @@ from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
 from hotel_reservations.assistant import HotelReservationsAssistant
 from hotel_reservations.core import (
+    Hotel,
     calc_reservation_price,
     find_hotels,
     make_reservation,
@@ -17,7 +18,7 @@ from hotel_reservations.dependencies import (
 
 
 def user_said_bye(state):
-    return state.chat_history[-1].message == "bye"
+    return state.chat_history[-1].message.lower() == "bye"
 
 
 def stop_condition(dependencies):
@@ -88,25 +89,33 @@ def test_query_with_all_the_information():
 def test_query_with_no_information():
     # Given
     user = LLMUser(
-        goal="Book a room in hotel H3, starting tomorrow, for 3 days. It's for two guests",
+        goal="Book a room in a London Hotel, starting in 3 of February, for 3 days, for two guests. I prefer hotel UK 2",
         persona="A helpful user",
+        metadata={
+            "name": "Pedro Sousa",
+        },
     )
 
     # When
     query = "I want to book a room"
     conversation, dependencies = create_test_conversation(
         user,
-        find_hotels_return_value=["H1", "H2", "H3"],
+        find_hotels_return_value=[
+            Hotel(1, "Hotel UK 1", "London"),
+            Hotel(2, "Hotel UK 2", "London"),
+            Hotel(3, "Hotel France 1", "Paris"),
+        ],
         current_date_return_value=datetime.date(2021, 1, 1),
+        options={"verbose": True},
     )
     conversation.start_conversation(query)
 
     # Then
     dependencies.make_reservation.assert_called_once_with(
-        "H3",
+        2,
         "Pedro Sousa",
-        datetime.date(2021, 1, 2),
-        datetime.date(2021, 1, 5),
+        datetime.date(2021, 2, 3),
+        datetime.date(2021, 2, 6),
         2,
     )
 
@@ -114,8 +123,11 @@ def test_query_with_no_information():
 def test_too_pricey():
     # Given
     user = LLMUser(
-        goal="Book a room in hotel H3, starting tomorrow, for 3 days. It's for two guests. Price should be less than 200",  # noqa E501
-        persona="A helpful user but I'm very tight-fisted, I will not pay more than 200",
+        goal="Book a room in hotel H2, starting tomorrow, for 3 days. It's for two guests. Price should be less than 200",  # noqa E501
+        persona="A helpful user but I'm very tight-fisted, I will not pay more than 200. I will give up if I can't find a hotel for that price",  # noqa E501
+        metadata={
+            "name": "Pedro Sousa",
+        },
     )
 
     # When
