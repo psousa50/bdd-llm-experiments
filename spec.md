@@ -2,15 +2,17 @@
 
 ## Scenario
 
-Given A user that wants to make a reservation in a hotel
-  And The user behaves like a normal person
+Given I'm user who want to make a reservation in hotel H3 in London, starting at tomorrow, for 3 days, for 2 guests. My name is Pedro Sousa.
+  And I'm a dumb user so I can only answer one quick question at a time.
+  And The list of hotels in London is: ["H1", "H2", "H3"]
+  And Today is 2022-01-01
 
-When The user asks for a reservation to the assistant
+When I start a conversation with the Assistant saying that I want to book a room
 
 Then My assistant should make a reservation with the following data:
 
-- hotel: Hotel Palace
+- hotel: H3
 - name: Pedro Sousa
-- checkin: 10/10/2024
-- checkout: 12/10/2024
+- checkin: 2022-01-02
+- checkout: 2022-01-05
 - number_of_guests: 2

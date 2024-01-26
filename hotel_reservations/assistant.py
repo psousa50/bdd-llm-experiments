@@ -61,6 +61,7 @@ class HotelReservationsAssistant:
             agent=agent,
             tools=tools,
             verbose=self.verbose,
+            return_intermediate_steps=True,
         )
 
         agent_with_chat_history = RunnableWithMessageHistory(
@@ -88,6 +89,11 @@ class HotelReservationsAssistant:
                 description="Useful to make a reservation.",
             ),
             StructuredTool.from_function(
+                func=dependencies.calc_reservation_price,
+                name="calc_reservation_price",
+                description="Useful to calculate the price of a reservation.",
+            ),
+            StructuredTool.from_function(
                 func=dependencies.current_date,
                 name="current_date",
                 description="Useful to get the current date.",
@@ -98,7 +104,9 @@ class HotelReservationsAssistant:
 
 SYSTEM_PROMPT = """
 You have a list of tools that you can use to help you make a reservation.
-You should NEVER try to guess any information that you can ask the user for.
+Don't EVER call the same tool twice with the same arguments, the response will ALWAYS be the same.
+You should NEVER try to guess any information needed to make a reservation.
 if you realize that you cannot make the reservation, you should say it.
-If successful, you should show the user the reservation details.
-"""
+When you have all the information needed to make the reservation, show the user the reservation details, including the price and ask for confirmation.
+If the user confirms, make the reservation.
+"""  # noqa E501
