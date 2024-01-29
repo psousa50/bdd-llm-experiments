@@ -4,9 +4,15 @@
 from bdd_llm.llm_user import LLMUser
 from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
-from hotel_reservations.assistant import HotelReservationsAssistant
-from hotel_reservations.core import make_reservation
-from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
+from hotel_reservations.assistant import (
+    HotelReservationsAssistant,
+)
+from hotel_reservations.core import (
+    make_reservation,
+)
+from hotel_reservations.dependencies import (
+    HotelReservationsAssistantDependencies,
+)
 
 
 def start():

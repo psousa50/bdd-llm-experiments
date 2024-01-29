@@ -8,7 +8,9 @@ from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
 
 from hotel_reservations.callbacks import LLMStartHandler
-from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
+from hotel_reservations.dependencies import (
+    HotelReservationsAssistantDependencies,
+)
 
 logger = logging.getLogger(__name__)
 
