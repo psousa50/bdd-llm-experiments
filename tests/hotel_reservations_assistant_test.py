@@ -18,6 +18,9 @@ from hotel_reservations.dependencies import (
 )
 
 
+verbose = False
+
+
 def user_said_bye(state):
     return state.chat_history[-1].message.lower() == "bye"
 
@@ -63,7 +66,7 @@ def create_test_conversation(
         current_date_return_value=current_date_return_value,
         current_year_return_value=current_year_return_value,
     )
-    assistant = HotelReservationsAssistant(dependencies)
+    assistant = HotelReservationsAssistant(dependencies, verbose=verbose)
 
     if stop_condition is None:
         stop_condition = default_stop_condition(dependencies)
@@ -81,12 +84,12 @@ def create_test_conversation(
 def test_query_with_all_the_information():
     # Given
     user = LLMUser(
-        goal="Book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb of 2024, for two guests",  # noqa E501
+        goal="Book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb, for two guests",  # noqa E501
         persona="A helpful user",
     )
     # When
     query = """
-    Hi, my name is Pedro Sousa. I want to book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb of 2024. It's for two guests.
+    Hi, my name is Pedro Sousa. I want to book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb. It's for two guests.
     """  # noqa E501
     conversation, dependencies = create_test_conversation(
         user,

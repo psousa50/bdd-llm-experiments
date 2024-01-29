@@ -43,13 +43,12 @@ class LLMUser(UserProxy):
                 ("user", "{input}"),
             ]
         )
-
-        model = ChatOpenAI(model="gpt-4", temperature=0.0)
-
+        llm = ChatOpenAI(
+            model="gpt-4",
+            temperature=0.0,
+        )
         output_parser = StrOutputParser()
-
-        chain = prompt | model | output_parser
-
+        chain = prompt | llm | output_parser
         return chain
 
     def format_metadata(self, metadata):

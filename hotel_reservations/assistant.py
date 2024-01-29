@@ -1,9 +1,7 @@
 import logging
 
-from langchain.agents import AgentExecutor
+from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
-from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
-from langchain_community.tools.convert_to_openai import format_tool_to_openai_function
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import StructuredTool
@@ -36,9 +34,11 @@ class HotelReservationsAssistant:
                 "callbacks": [self.handler],
             },
         )
-        fm = format_to_openai_function_messages(response["intermediate_steps"])
+        intermediate_steps = format_to_openai_function_messages(
+            response["intermediate_steps"]
+        )
         self.chat_history.append(HumanMessage(content=query))
-        self.chat_history.extend(fm)
+        self.chat_history.extend(intermediate_steps)
         self.chat_history.append(AIMessage(content=response["output"]))
 
         logger.debug(f"LLM Response: {response}")
@@ -63,22 +63,8 @@ class HotelReservationsAssistant:
             ]
         )
 
-        logger.info(f"Prompt: {prompt}")
-        llm_with_tools = llm.bind(
-            functions=[format_tool_to_openai_function(t) for t in tools]
-        )
-        agent = (
-            {
-                "input": lambda x: x["input"],
-                "agent_scratchpad": lambda x: format_to_openai_function_messages(
-                    x["intermediate_steps"]
-                ),
-                "chat_history": lambda x: x["chat_history"],
-            }
-            | prompt
-            | llm_with_tools
-            | OpenAIFunctionsAgentOutputParser()
-        )
+        logger.debug(f"Agent Prompt: {prompt}")
+        agent = create_openai_functions_agent(llm, tools, prompt)
 
         agent_executor = AgentExecutor(
             agent=agent,
