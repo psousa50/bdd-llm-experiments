@@ -1,6 +1,7 @@
 # import logging
 
 
+from bdd_llm.user import ConsoleUser
 from bdd_llm.llm_user import LLMUser
 from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
@@ -16,13 +17,14 @@ from hotel_reservations.dependencies import (
 
 
 def start():
-    user = LLMUser(
+    user = LLMUser.from_config(
         goal="Book a room in a London Hotel, starting in 3 of February, for 3 days, for two guests. I prefer hotel UK 2",  # noqa E501
         persona="A helpful user",
         metadata={
             "name": "Pedro Sousa",
         },
     )
+    user = ConsoleUser()
 
     wrapped_make_reservation = create_mock(make_reservation)
 
@@ -32,6 +34,7 @@ def start():
     assistant = HotelReservationsAssistant(dependencies, verbose=True)
 
     query = "I want to book a room"
+    query = input("You: ")
     conversation = UserConversation(
         user=user,
         assistant=lambda query: assistant.invoke(query),

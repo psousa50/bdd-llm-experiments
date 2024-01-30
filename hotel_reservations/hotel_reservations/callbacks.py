@@ -26,4 +26,4 @@ class LLMStartHandler(BaseCallbackHandler):
         **kwargs: Any,
     ) -> Any:
         """Run when Chat Model starts running."""
-        logger.info(f"on_chat_model_start: {messages}")
+        logger.debug(f"on_chat_model_start: {messages}")

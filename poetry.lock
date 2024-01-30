@@ -198,14 +198,13 @@ name = "bdd-llm"
 version = "0.1.0"
 description = ""
 optional = false
-python-versions = ">=3.11,<4.0"
-files = [
-    {file = "bdd_llm-0.1.0-py3-none-any.whl", hash = "sha256:68d80655138a3184114cf93dc654baeaf9e5f0bf876b48a1d80d6b5ca79c1776"},
-]
+python-versions = "^3.11"
+files = []
+develop = true
 
 [package.source]
-type = "file"
-url = "bdd_llm/dist/bdd_llm-0.1.0-py3-none-any.whl"
+type = "directory"
+url = "bdd_llm"
 
 [[package]]
 name = "certifi"
@@ -3232,4 +3231,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "e641f6afa216882e9b68804dbb25ee5788d73393178c62535258235ae3ce3410"
+content-hash = "ce6deacc6e844b1e679cabb3160ae3b88003c71fa4e8640888fe578b96d1fba6"
