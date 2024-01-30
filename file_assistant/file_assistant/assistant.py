@@ -2,13 +2,7 @@ import logging
 
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
-from langchain_community.tools.file_management import (
-    ReadFileTool,
-    WriteFileTool,
-    ListDirectoryTool,
-)
 from langchain_community.agent_toolkits import FileManagementToolkit
-
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
@@ -58,7 +52,7 @@ class FileAssistant:
         llm = ChatOpenAI(
             model="gpt-4",
             temperature=0.0,
-            openai_api_base="http://localhost:8000",
+            # openai_api_base="http://localhost:8000",
         )
         tools = [
             self.dependencies.read_file,

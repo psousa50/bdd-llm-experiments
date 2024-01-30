@@ -53,7 +53,7 @@ class HotelReservationsAssistant:
         llm = ChatOpenAI(
             model="gpt-4",
             temperature=0.0,
-            openai_api_base="http://localhost:8000",
+            # openai_api_base="http://localhost:8000",
         )
         tools = self.build_tools(dependencies)
         prompt = ChatPromptTemplate.from_messages(

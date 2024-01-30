@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bdd-llm-experiments"
+name = "hotel-reservations-api"
 version = "0.1.0"
 description = ""
 authors = ["Pedro Sousa <pedronsousa@gmail.com>"]
@@ -7,10 +7,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+fastapi = "^0.109.0"
+hotel-reservations = {path = "../hotel_reservations", develop = true}
+uvicorn = {extras = ["standard"], version = "^0.27.0.post1"}
 
-
-[tool.poetry.group.dev.dependencies]
-flake8 = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]

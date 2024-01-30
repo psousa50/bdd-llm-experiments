@@ -1,7 +1,6 @@
-# import logging
+import logging
 
 
-from bdd_llm.user import ConsoleUser
 from bdd_llm.llm_user import LLMUser
 from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
@@ -24,7 +23,6 @@ def start():
             "name": "Pedro Sousa",
         },
     )
-    user = ConsoleUser()
 
     wrapped_make_reservation = create_mock(make_reservation)
 
@@ -34,7 +32,6 @@ def start():
     assistant = HotelReservationsAssistant(dependencies, verbose=True)
 
     query = "I want to book a room"
-    query = input("You: ")
     conversation = UserConversation(
         user=user,
         assistant=lambda query: assistant.invoke(query),
@@ -53,5 +50,5 @@ def bye(state):
 
 
 if __name__ == "__main__":
-    # logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.WARNING)
     start()

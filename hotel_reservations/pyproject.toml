@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bdd-llm-experiments"
+name = "hotel-reservations"
 version = "0.1.0"
 description = ""
 authors = ["Pedro Sousa <pedronsousa@gmail.com>"]
@@ -7,10 +7,15 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pytest = "^8.0.0"
+langchain = "^0.1.4"
+langchain-community = "^0.0.16"
+langchain-core = "^0.1.17"
+langchain-openai = "^0.0.5"
+langchainhub = "^0.1.14"
+bdd-llm = {path = "../bdd_llm", develop = true}
+colorama = "^0.4.6"
 
-
-[tool.poetry.group.dev.dependencies]
-flake8 = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]
