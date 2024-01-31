@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from hotel_reservations.assistant import HotelReservationsAssistant
 
 app = FastAPI()

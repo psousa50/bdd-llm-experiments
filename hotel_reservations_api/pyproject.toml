@@ -8,8 +8,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.109.0"
-hotel-reservations = {path = "../hotel_reservations", develop = true}
 uvicorn = {extras = ["standard"], version = "^0.27.0.post1"}
+hotel-reservations = {path = "../hotel_reservations", develop = true}
 
 
 [build-system]
