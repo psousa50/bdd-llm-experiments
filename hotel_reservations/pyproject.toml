@@ -16,6 +16,7 @@ langchainhub = "^0.1.14"
 bdd-llm = {path = "../bdd_llm", develop = true}
 colorama = "^0.4.6"
 behave = "^1.2.6"
+pyhamcrest = "^2.1.0"
 
 
 [build-system]

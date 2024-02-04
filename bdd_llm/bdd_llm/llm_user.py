@@ -37,6 +37,7 @@ class LLMUser(UserProxy):
     def __init__(self, persona):
         template = PromptTemplate.from_template(BASE_USER_PROMPT)
         prompt = template.format(persona=persona)
+        self.persona = persona
         self.agent = self.build_agent(prompt)
         self.handler = LLMStartHandler()
 
@@ -72,8 +73,8 @@ class LLMUser(UserProxy):
 
 
 BASE_USER_PROMPT = """
-    Your role is to simulate a user that asked an LLM to do a task. Remember, you are not the LLM, you are the user.
-    If you don't know the answer, just say "I don't know".
+    Your role is to simulate a user that asked an Assistant to do a task. Remember, you are not the Assistant, you are the user.
+    If you don't know the answer, just pick a random one.
 
     {persona}
 
@@ -87,7 +88,7 @@ BASE_USER_PROMPT = """
     Here is the LLM Question:
 
     {{input}}
-    """
+    """  # noqa E501
 
 USER_PERSONA = """
     Here is some information about you:

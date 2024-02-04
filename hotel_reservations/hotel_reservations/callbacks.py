@@ -27,3 +27,11 @@ class LLMStartHandler(BaseCallbackHandler):
     ) -> Any:
         """Run when Chat Model starts running."""
         logger.debug(f"on_chat_model_start: {messages}")
+
+    def on_tool_start(
+        self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
+    ) -> Any:
+        """Run when tool starts running."""
+        logger.info(f"on_tool_start - serialized: {serialized}")
+        logger.info(f"on_tool_start - input_str: {input_str}")
+        logger.info(f"on_tool_start - kwargs: {kwargs}")

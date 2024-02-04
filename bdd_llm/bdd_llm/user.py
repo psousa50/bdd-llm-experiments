@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 class UserProxy(ABC):
     @abstractmethod
-    def get_input(self, question: str, chat_history: list[ChatMessage]):
+    def get_input(self, question: str, chat_history: list[ChatMessage]) -> str:
         pass
 
 

@@ -1,17 +1,17 @@
-from bdd_llm.llm_user import LLMUser
-from behave import given, when, then
+# type: ignore
+
+import json
 from datetime import datetime
 
+from behave import given, then, when
+from hamcrest import assert_that, greater_than
+from tests.helpers import create_test_conversation
+
+from bdd_llm.conversation_analyzer import ConversationAnalyzer
+from bdd_llm.llm_user import LLMUser
 from hotel_reservations.core import Hotel
-from tests.hotel_reservations_assistant_test import create_test_conversation
 
-test_config = {}
-
-
-def before_scenario(context):
-    context.current_date = datetime.now().date()
-    context.current_year = datetime.now().year
-    print("Before scenario executed")
+verbose = False
 
 
 def format_date(date):
@@ -23,6 +23,7 @@ def step_impl(context):
     context.persona = context.text
     context.current_date = datetime.now().date()
     context.current_year = datetime.now().year
+    context.hotels = []
 
 
 @given("Today is {today}")
@@ -61,6 +62,7 @@ def step_impl(context):  # noqa F811
         find_hotels_return_value=context.hotels,
         current_date_return_value=current_date_return_value,
         current_year_return_value=current_year_return_value,
+        options={"verbose": verbose},
     )
     context.conversation = conversation
     context.dependencies = dependencies
@@ -93,4 +95,16 @@ def step_impl(  # noqa F811
         format_date(checkin_date),
         format_date(checkout_date),
         int(guests),
+    )
+
+
+@then("The conversation should make sense, with a score above {score}")
+def step_impl(context, score):  # noqa F811
+    conversationAnalyzer = ConversationAnalyzer()
+    response = conversationAnalyzer.invoke(context.conversation.state.chat_history)
+    response_json = json.loads(response.content)
+    assert_that(
+        int(response_json["score"]),
+        greater_than(int(score)),
+        reason=response_json["feedback"],
     )

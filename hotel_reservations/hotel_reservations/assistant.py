@@ -1,4 +1,6 @@
+import os
 import logging
+from typing import Any
 
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
@@ -66,7 +68,7 @@ class HotelReservationsAssistant:
         )
 
         logger.debug(f"Agent Prompt: {prompt}")
-        agent = create_openai_functions_agent(llm, tools, prompt)
+        agent: Any = create_openai_functions_agent(llm, tools, prompt)
 
         agent_executor = AgentExecutor(
             agent=agent,
@@ -114,7 +116,8 @@ class HotelReservationsAssistant:
 SYSTEM_PROMPT = """
 You have a list of tools that you can use to help you make a reservation.
 Don't EVER call the same tool twice with the same arguments, the response will ALWAYS be the same.
-You should ask the user for the information needed to make the reservation, don't guess it.
+You should always ask the user for the information needed to make the reservation, don't guess it.
+If the user doesn't provide the enough information you should not make the reservation.
 
 If an hotel name is given, it may be incomplete, you should try to find the hotel anyway.
 
