@@ -45,6 +45,14 @@ def create_dependencies(
     return dependencies
 
 
+def chat_fn(assistant):
+    def fn(query: str) -> str:
+        response = assistant.invoke(query)
+        return response["output"]
+
+    return fn
+
+
 def create_test_conversation(
     user,
     find_hotels_return_value=["H1", "H2", "H3"],
@@ -69,7 +77,7 @@ def create_test_conversation(
         stop_condition = default_stop_condition(dependencies)
     conversation = UserConversation(
         user=user,
-        assistant=lambda query: assistant.invoke(query),
+        assistant=chat_fn(assistant),
         stop_condition=stop_condition,
         max_iterations=max_iterations,
         options=options,

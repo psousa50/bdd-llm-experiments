@@ -18,6 +18,14 @@ def filter(record):
     return record.name in ["hotel_reservations.callbacks"]
 
 
+def chat_fn(assistant):
+    def fn(query: str) -> str:
+        response = assistant.invoke(query)
+        return response
+
+    return fn
+
+
 def start():
     user = LLMUser.from_persona(
         persona="""
@@ -38,7 +46,7 @@ def start():
     query = "I want to book a room"
     conversation = UserConversation(
         user=user,
-        assistant=lambda query: assistant.invoke(query),
+        assistant=chat_fn(assistant),
         stop_condition=lambda state: dependencies.make_reservation.called or bye(state),
         options={"verbose": verbose},
     )
@@ -64,4 +72,16 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     for handler in logging.root.handlers:
         handler.addFilter(filter)
+    start()
+    start()
+    start()
+    start()
+    start()
+    start()
+    start()
+    start()
+    start()
+    start()
+    start()
+    start()
     start()

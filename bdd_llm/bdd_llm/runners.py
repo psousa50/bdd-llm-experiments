@@ -4,7 +4,7 @@ from typing import Any, Callable
 from bdd_llm.messages import AssistantMessage, ChatMessage, UserMessage
 from bdd_llm.user import UserProxy
 
-Assistant = Callable[[str], dict[str, Any]]
+Assistant = Callable[[str], str]
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,6 @@ class UserConversation:
         done = False
         while not done:
             llm_response = self.assistant(user_response)
-            llm_response = llm_response["output"]
             user_response = self.user.get_input(llm_response, self.state.chat_history)
 
             self.log_message(AssistantMessage(llm_response))

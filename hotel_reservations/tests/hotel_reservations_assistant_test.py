@@ -1,9 +1,9 @@
 import datetime
 
-from bdd_llm.llm_user import LLMUser
-from hotel_reservations.hotel_reservations.core import Hotel
+from tests.helpers import create_test_conversation
 
-from hotel_reservations.tests.helpers import create_test_conversation
+from bdd_llm.llm_user import LLMUser
+from hotel_reservations.core import Hotel
 
 verbose = True
 
