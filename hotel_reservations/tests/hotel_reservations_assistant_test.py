@@ -23,7 +23,6 @@ def test_query_with_all_the_information():
         find_hotels_return_value=[
             Hotel(234, "Park Grand London Kensington", "London"),
         ],
-        current_year_return_value=2024,
     )
     conversation.start_conversation(query)
 
@@ -31,7 +30,6 @@ def test_query_with_all_the_information():
         print(chat)
 
     # Then
-    dependencies.current_year.assert_called_once()
     dependencies.make_reservation.assert_called_once_with(
         234,
         "Pedro Sousa",
@@ -55,13 +53,11 @@ def test_query_with_all_the_information_full_prompt():
         find_hotels_return_value=[
             Hotel(234, "Park Grand London Kensington", "London"),
         ],
-        current_year_return_value=2024,
         options={"verbose": verbose},
     )
     conversation.start_conversation(query)
 
     # Then
-    dependencies.current_year.assert_called_once()
     dependencies.make_reservation.assert_called_once_with(
         234,
         "Pedro Sousa",
@@ -92,7 +88,6 @@ def test_query_with_relative_dates():
             Hotel(3, "Park Plaza Westminster Bridge London", "London"),
         ],
         current_date_return_value=datetime.date(2024, 1, 23),
-        current_year_return_value=2024,
     )
     conversation.start_conversation(query)
 
@@ -124,7 +119,6 @@ def test_query_with_no_information():
         find_hotels_return_value=[
             Hotel(2, "Hotel UK 2", "London"),
         ],
-        current_year_return_value=2027,
         options={"verbose": True},
     )
     conversation.start_conversation(query)
@@ -160,13 +154,11 @@ def test_slow_user_with_no_information():
             Hotel(2, "Park Grand London Kensington", "London"),
             Hotel(3, "Park Plaza Westminster Bridge London", "London"),
         ],
-        current_year_return_value=2024,
         options={"verbose": True},
     )
     conversation.start_conversation(query)
 
     # Then
-    dependencies.current_year.assert_called_once()
     dependencies.make_reservation.assert_called_once_with(
         3,
         "Pedro Sousa",

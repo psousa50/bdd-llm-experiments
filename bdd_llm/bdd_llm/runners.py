@@ -1,7 +1,8 @@
 import logging
-from typing import Any, Callable
+from typing import Callable
 
-from bdd_llm.messages import AssistantMessage, ChatMessage, UserMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+
 from bdd_llm.user import UserProxy
 
 Assistant = Callable[[str], str]
@@ -10,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 class UserConversationState:
-    def __init__(self, chat_history: list[ChatMessage] = []):
+    def __init__(self, chat_history: list[BaseMessage] = []):
         self.chat_history = chat_history
 
-    def add_message(self, message: ChatMessage):
+    def add_message(self, message: BaseMessage):
         self.chat_history.append(message)
 
 
@@ -35,16 +36,16 @@ class UserConversation:
         self.state = UserConversationState()
 
     def start_conversation(self, query: str):
-        self.state.add_message(UserMessage(query))
+        self.state.add_message(HumanMessage(content=query))
         user_response = query
         iterations = 0
         done = False
         while not done:
             llm_response = self.assistant(user_response)
-            user_response = self.user.get_input(llm_response, self.state.chat_history)
+            user_response = self.user.get_input(llm_response)
 
-            self.log_message(AssistantMessage(llm_response))
-            self.log_message(UserMessage(user_response))
+            self.log_message(AIMessage(content=llm_response))
+            self.log_message(HumanMessage(content=user_response))
 
             iterations += 1
             done = iterations >= self.max_iterations or self.stop_condition(self.state)
@@ -54,7 +55,7 @@ class UserConversation:
 
         return self.state
 
-    def log_message(self, message: ChatMessage):
+    def log_message(self, message: BaseMessage):
         if self.options.get("verbose", False):
             print(message)
         self.state.add_message(message)

@@ -23,13 +23,17 @@ class HotelReservationsAssistant:
         self.dependencies = dependencies
         self.verbose = verbose
 
-        self.agent = self.build_agent(dependencies)
         self.chat_history = []
         self.handler = LLMStartHandler()
 
+        self.agent = self.build_agent(dependencies)
+
     def invoke(self, query: str, session_id: str = "foo"):
         response = self.agent.invoke(
-            {"input": query, "chat_history": self.chat_history},
+            {
+                "input": query,
+                "chat_history": self.chat_history,
+            },
             config={
                 "configurable": {"session_id": session_id},
                 "callbacks": [self.handler],
@@ -63,6 +67,7 @@ class HotelReservationsAssistant:
                 MessagesPlaceholder(variable_name="agent_scratchpad"),
             ]
         )
+        prompt = prompt.partial(current_date=str(self.dependencies.current_date()))
 
         logger.debug(f"Agent Prompt: {prompt}")
         agent: Any = create_openai_functions_agent(llm, tools, prompt)
@@ -81,16 +86,6 @@ class HotelReservationsAssistant:
         dependencies: HotelReservationsAssistantDependencies,
     ):
         tools = [
-            StructuredTool.from_function(
-                func=dependencies.current_date,
-                name="current_date",
-                description="Useful to get the current date.",
-            ),
-            StructuredTool.from_function(
-                func=dependencies.current_year,
-                name="current_year",
-                description="Useful to find the current year.",
-            ),
             StructuredTool.from_function(
                 func=dependencies.find_hotels,
                 name="find_hotels",
@@ -111,21 +106,14 @@ class HotelReservationsAssistant:
 
 
 SYSTEM_PROMPT = """
+You are a helpful hotel reservations assistant.
 You have a list of tools that you can use to help you make a reservation.
-Don't EVER call the same tool twice with the same arguments, the response will ALWAYS be the same.
-You should always ask the user for the information needed to make the reservation, don't guess it.
-If the user doesn't provide the enough information you should not make the reservation.
-
-If an hotel name is given, it may be incomplete, you should try to find the hotel anyway.
-
-If a date is provided without a year, you should use a tool to find the current year.
-If you need to find out the current date, you should use a tool to get it.
-
 The name of the guest is mandatory to make the reservation.
 
-If should try to find out what's the current year, don't assume it.
+Today is {current_date}.
 
-if you realize that you cannot make the reservation, you should say it.
-When you have all the information needed to make the reservation, show the user the reservation details, including the price and ask for confirmation.
-If the user confirms, make the reservation.
+Consider weekends to start at Friday and end at Sunday.
+
+You should always confirm the reservation with the user before making it.
+
 """  # noqa E501

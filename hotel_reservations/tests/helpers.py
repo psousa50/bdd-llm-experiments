@@ -12,7 +12,6 @@ from hotel_reservations.core import (
 from hotel_reservations.dependencies import (
     HotelReservationsAssistantDependencies,
     current_date,
-    current_year,
 )
 
 
@@ -31,7 +30,6 @@ def create_dependencies(
     find_hotels_return_value=["H1", "H2", "H3"],
     calc_reservation_price_return_value=100,
     current_date_return_value=datetime.date(2024, 1, 1),
-    current_year_return_value=1900,
 ):
     dependencies = HotelReservationsAssistantDependencies(
         find_hotels=create_mock(find_hotels, return_value=find_hotels_return_value),
@@ -40,7 +38,6 @@ def create_dependencies(
         ),
         make_reservation=create_mock(make_reservation, return_value=True),
         current_date=create_mock(current_date, return_value=current_date_return_value),
-        current_year=create_mock(current_year, return_value=current_year_return_value),
     )
     return dependencies
 
@@ -58,7 +55,6 @@ def create_test_conversation(
     find_hotels_return_value=["H1", "H2", "H3"],
     calc_reservation_price_return_value=100,
     current_date_return_value=datetime.date(1900, 1, 1),
-    current_year_return_value=1900,
     stop_condition: Union[Callable[[UserConversationState], bool], None] = None,
     max_iterations=10,
     options={},
@@ -67,7 +63,6 @@ def create_test_conversation(
         find_hotels_return_value=find_hotels_return_value,
         calc_reservation_price_return_value=calc_reservation_price_return_value,
         current_date_return_value=current_date_return_value,
-        current_year_return_value=current_year_return_value,
     )
     assistant = HotelReservationsAssistant(
         dependencies, verbose=options.get("verbose", False)

@@ -1,5 +1,9 @@
 import logging
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def filter(record):
     print("record.name:", record.name)

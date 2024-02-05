@@ -1,16 +1,15 @@
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import BaseMessage
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
-
-from bdd_llm.messages import ChatMessage
 
 
 class ConversationAnalyzer:
     def __init__(self):
         self.llm = self.build_llm()
 
-    def invoke(self, conversation: list[ChatMessage]):
-        query = "\n".join([message.content for message in conversation])
-        response = self.llm.invoke({"input": query})
+    def invoke(self, chat_history: list[BaseMessage]):
+        response = self.llm.invoke({"chat_history": chat_history})
         return response
 
     def build_llm(self):
@@ -21,11 +20,11 @@ class ConversationAnalyzer:
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", PROMPT),
-                ("user", "{input}"),
+                MessagesPlaceholder(variable_name="chat_history"),
             ]
         )
 
-        chain = prompt | llm
+        chain = prompt | llm | JsonOutputParser()
         return chain
 
 
@@ -42,5 +41,5 @@ Your response should be in JSON format using the following structure:
 }}
 
 Conversation:
-{input}
+{chat_history}
 """

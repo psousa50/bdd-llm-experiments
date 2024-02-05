@@ -40,15 +40,6 @@ message = {
             },
         },
         {
-            "name": "current_year",
-            "description": "current_year() - Useful to find the current year.",
-            "parameters": {
-                "title": "current_yearSchemaSchema",
-                "type": "object",
-                "properties": {},
-            },
-        },
-        {
             "name": "find_hotels",
             "description": "find_hotels(name: str = '', location: str = '') -> list[hotel_reservations.core.Hotel] - Useful to find hotels by name and/or location.",
             "parameters": {

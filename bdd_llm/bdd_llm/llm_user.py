@@ -10,7 +10,6 @@ from langchain_core.prompts import (
 from langchain_openai import ChatOpenAI
 
 from bdd_llm.callbacks import LLMStartHandler
-from bdd_llm.messages import ChatMessage
 from bdd_llm.user import UserProxy
 
 logger = logging.getLogger(__name__)
@@ -74,21 +73,23 @@ class LLMUser(UserProxy):
         chain = prompt | llm | output_parser
         return chain
 
-    def format_chat_history(self, chat_history: list[ChatMessage]):
-        return "\n".join([repr(m) for m in chat_history])
-
 
 BASE_USER_PROMPT = """
     Your role is to simulate a user that asked an Assistant to do a task. Remember, you are not the Assistant, you are the user.
     If you don't know the answer, just pick a random one.
 
     This is how you should behave:
+    =============================
     {persona}
+    =============================
 
     When the LLM finishes the task, it will not ask a question, it will just give you the result.
     You should then say "bye" to the LLM to end the conversation.
 
+    Conversation:
+    =============================
     {{chat_history}}
+    =============================
     """  # noqa E501
 
 USER_PERSONA = """

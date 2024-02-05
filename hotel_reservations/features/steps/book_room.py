@@ -1,10 +1,11 @@
 # type: ignore
 
-import json
+import random
 from datetime import datetime
 
 from behave import given, then, when
 from hamcrest import assert_that, greater_than
+from langchain_core.messages import AIMessage
 from tests.helpers import create_test_conversation
 
 from bdd_llm.conversation_analyzer import ConversationAnalyzer
@@ -22,18 +23,12 @@ def format_date(date):
 def step_impl(context):
     context.persona = context.text
     context.current_date = datetime.now().date()
-    context.current_year = datetime.now().year
     context.hotels = []
 
 
 @given("Today is {today}")
 def step_impl(context, today):  # noqa F811
     context.current_date = format_date(today)
-
-
-@given("The year is {year}")
-def step_impl(context, year):  # noqa F811
-    context.current_year = int(year)
 
 
 @given("We have the following hotels in {location}")
@@ -56,12 +51,10 @@ def step_impl(context):  # noqa F811
 def step_impl(context):  # noqa F811
     user = LLMUser.from_persona(context.persona)
     current_date_return_value = context.current_date
-    current_year_return_value = context.current_year
     conversation, dependencies = create_test_conversation(
         user,
         find_hotels_return_value=context.hotels,
         current_date_return_value=current_date_return_value,
-        current_year_return_value=current_year_return_value,
         options={"verbose": verbose},
     )
     context.conversation = conversation
@@ -76,11 +69,6 @@ def step_impl(context, query):  # noqa F811
 @then("The assistant should fetch the current date")
 def step_impl(context):  # noqa F811
     context.dependencies.current_date.assert_called_once()
-
-
-@then("The assistant should fetch the current year")
-def step_impl(context):  # noqa F811
-    context.dependencies.current_year.assert_called_once()
 
 
 @then(
@@ -101,10 +89,11 @@ def step_impl(  # noqa F811
 @then("The conversation should make sense, with a score above {score}")
 def step_impl(context, score):  # noqa F811
     conversationAnalyzer = ConversationAnalyzer()
-    response = conversationAnalyzer.invoke(context.conversation.state.chat_history)
-    response_json = json.loads(response.content)
+    current_date = AIMessage(content=f"Today is {context.current_date}")
+    chat_history = [current_date] + context.conversation.state.chat_history
+    response = conversationAnalyzer.invoke(chat_history)
     assert_that(
-        int(response_json["score"]),
+        int(response["score"]),
         greater_than(int(score)),
-        reason=response_json["feedback"],
+        reason=response["feedback"],
     )

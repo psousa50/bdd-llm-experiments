@@ -1,15 +1,13 @@
 import logging
 from abc import ABC, abstractmethod
 
-from bdd_llm.messages import ChatMessage
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
 class UserProxy(ABC):
     @abstractmethod
-    def get_input(self, question: str, chat_history: list[ChatMessage]) -> str:
+    def get_input(self, question: str) -> str:
         pass
 
 
@@ -18,7 +16,7 @@ class ConsoleUser(UserProxy):
         self.query = query
         self.metadata = metadata
 
-    def get_input(self, question: str, chat_history: list[ChatMessage]):
+    def get_input(self, question: str):
         return input("You: ")
 
 

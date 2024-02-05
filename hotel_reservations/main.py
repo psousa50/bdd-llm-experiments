@@ -1,6 +1,7 @@
 import json
-import logging
 from datetime import datetime
+
+from dotenv import load_dotenv
 
 from bdd_llm.conversation_analyzer import ConversationAnalyzer
 from bdd_llm.llm_user import LLMUser
@@ -10,18 +11,15 @@ from hotel_reservations.assistant import HotelReservationsAssistant
 from hotel_reservations.core import make_reservation
 from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
 
+load_dotenv()
+
 verbose = False
 
 
-def filter(record):
-    print("record.name:", record.name)
-    return record.name in ["hotel_reservations.callbacks"]
-
-
-def chat_fn(assistant):
+def chat_fn(assistant: HotelReservationsAssistant):
     def fn(query: str) -> str:
         response = assistant.invoke(query)
-        return response
+        return response["output"]
 
     return fn
 
@@ -69,7 +67,4 @@ def bye(state):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    for handler in logging.root.handlers:
-        handler.addFilter(filter)
     start()
