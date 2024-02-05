@@ -1,15 +1,13 @@
 import datetime
-import os
 
-from bdd_llm.llm_user import LLMUser
+from tests.llm_user import llm_user, llm_user_node
+
 from bdd_llm.mocks import create_mock
 from hotel_reservations.assistant import (
-    HotelReservationsAssistant,
     HotelReservationsAssistantDependencies,
+    hotel_reservations_assistant,
 )
 from hotel_reservations.core import Hotel, find_hotels, make_reservation
-
-os.environ["LANGCHAIN_PROJECT"] = "Hotel Reservations Graph"
 
 
 def user_said_bye(response):
@@ -44,13 +42,15 @@ def test_hotel_reservations_assistant():
         make_reservation=make_reservation_mock,
         find_hotels=find_hotels_mock,
     )
-    assistant = HotelReservationsAssistant(dependencies=dependencies)
+    assistant = hotel_reservations_assistant(dependencies=dependencies)
 
-    user = LLMUser.from_persona(
-        """
+    user = llm_user_node(
+        llm_user(
+            """
         My name is John Smith and I'm a helpful user.
         I want to bool a room in Grand London Kensington, from 12th April 2024 to 20th April 2024 for 3 guests.
         """
+        )
     )
 
     query = "I want to book a hotel"
