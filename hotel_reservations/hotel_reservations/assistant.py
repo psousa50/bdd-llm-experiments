@@ -2,16 +2,14 @@ import logging
 from typing import Any
 
 from langchain.agents import AgentExecutor, create_openai_functions_agent
-from langchain.agents.format_scratchpad import \
-    format_to_openai_function_messages
+from langchain.agents.format_scratchpad import format_to_openai_function_messages
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
 
 from hotel_reservations.callbacks import LLMStartHandler
-from hotel_reservations.dependencies import \
-    HotelReservationsAssistantDependencies
+from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +127,5 @@ If should try to find out what's the current year, don't assume it.
 
 if you realize that you cannot make the reservation, you should say it.
 When you have all the information needed to make the reservation, show the user the reservation details, including the price and ask for confirmation.
-If the user confirms, make the reservation.
-"""  # noqa E501
 If the user confirms, make the reservation.
 """  # noqa E501
