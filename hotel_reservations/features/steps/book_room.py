@@ -1,6 +1,5 @@
 # type: ignore
 
-import random
 from datetime import datetime
 
 from behave import given, then, when
