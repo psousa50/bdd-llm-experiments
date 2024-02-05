@@ -17,7 +17,7 @@ from hotel_reservations.dependencies import (
 
 
 def user_said_bye(state):
-    return state.chat_history[-1].message.lower() == "bye"
+    return state.chat_history[-1].content.lower() == "bye"
 
 
 def default_stop_condition(dependencies):

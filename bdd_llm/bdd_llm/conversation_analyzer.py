@@ -9,7 +9,7 @@ class ConversationAnalyzer:
         self.llm = self.build_llm()
 
     def invoke(self, conversation: list[ChatMessage]):
-        query = "\n".join([message.message for message in conversation])
+        query = "\n".join([message.content for message in conversation])
         response = self.llm.invoke({"input": query})
         return response
 

@@ -2,12 +2,12 @@ from colorama import Fore
 
 
 class ChatMessage:
-    def __init__(self, role: str, message: str):
+    def __init__(self, role: str, content: str):
         self.role = role
-        self.message = message
+        self.content = content
 
     def __repr__(self):
-        return f"{self.role}: {self.message}"
+        return f"{self.role}: {self.content}"
 
 
 class AssistantMessage(ChatMessage):
@@ -15,7 +15,7 @@ class AssistantMessage(ChatMessage):
         super().__init__("Assistant", message)
 
     def __str__(self):
-        return f"{Fore.GREEN}{self.role}: {self.message}{Fore.RESET}"
+        return f"{Fore.GREEN}{self.role}: {self.content}{Fore.RESET}"
 
 
 class UserMessage(ChatMessage):
@@ -23,4 +23,4 @@ class UserMessage(ChatMessage):
         super().__init__("User", message)
 
     def __str__(self):
-        return f"{Fore.CYAN}{self.role}: {self.message}{Fore.RESET}"
+        return f"{Fore.CYAN}{self.role}: {self.content}{Fore.RESET}"

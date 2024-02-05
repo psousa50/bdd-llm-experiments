@@ -13,8 +13,8 @@ from hotel_reservations.core import Hotel, find_hotels, make_reservation
 os.environ["LANGCHAIN_PROJECT"] = "Hotel Reservations Graph"
 
 
-def user_said_bye(state):
-    return state.chat_history[-1].message.lower() == "bye"
+def user_said_bye(response):
+    return "bye" in response.lower()
 
 
 def stop_condition(dependencies):
@@ -54,13 +54,20 @@ def test_hotel_reservations_assistant():
         """
     )
 
-    conversation = UserConversation(
-        assistant=chat_fn(assistant),
-        user=user,
-        stop_condition=stop_condition(dependencies),
-    )
+    query = "I want to book a hotel"
+    done = False
+    iteration_count = 0
+    while not done:
+        response = assistant.invoke(query)
+        iteration_count += 1
+        done = (
+            iteration_count > 6
+            or make_reservation_mock.called
+            or user_said_bye(response)
+        )
+        if not done:
+            query = user.get_input(response)
 
-    conversation.start_conversation("I want to book a hotel")
     make_reservation_mock.assert_called_once_with(
         hotel_id=234,
         guest_name="John Smith",

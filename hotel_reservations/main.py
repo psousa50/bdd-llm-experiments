@@ -65,23 +65,11 @@ def start():
 
 
 def bye(state):
-    return "bye" in state.chat_history[-1].message.lower()
+    return "bye" in state.chat_history[-1].content.lower()
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     for handler in logging.root.handlers:
         handler.addFilter(filter)
-    start()
-    start()
-    start()
-    start()
-    start()
-    start()
-    start()
-    start()
-    start()
-    start()
-    start()
-    start()
     start()
