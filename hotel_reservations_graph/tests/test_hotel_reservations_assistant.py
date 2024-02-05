@@ -3,7 +3,6 @@ import os
 
 from bdd_llm.llm_user import LLMUser
 from bdd_llm.mocks import create_mock
-from bdd_llm.runners import UserConversation
 from hotel_reservations.assistant import (
     HotelReservationsAssistant,
     HotelReservationsAssistantDependencies,
