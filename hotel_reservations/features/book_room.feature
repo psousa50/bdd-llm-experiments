@@ -42,7 +42,6 @@ Feature: Book a room in a hotel
        Then The assistant should book a room for Pedro Sousa, in the hotel with id 34, starting in 2024-02-09 and ending in 2024-02-11, for 3 people
        And The conversation should make sense, with a score above 8
 
-  @wip
   Scenario: A helpful user, using relative day
      Given I'm a user with the following persona:
         """
@@ -60,6 +59,7 @@ Feature: Book a room in a hotel
       When I start a conversation with an Assistant
        And I say "I want to book a room"
 
+       Then The assistant should book a room for Pedro Sousa, in the hotel with id 34, starting in 2024-01-25 and ending in 2024-01-29, for 2 people
        Then The conversation should make sense, with a score above 8
 
   Scenario: A helpful user, using specific dates, no year

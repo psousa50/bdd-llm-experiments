@@ -10,6 +10,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, MessageGraph
 
 from hotel_reservations.core import find_hotels, make_reservation
+from hotel_reservations.date_assistant import create_date_assistant
 
 FINISH = "FINISH"
 
@@ -30,6 +31,18 @@ User = Callable[[list[BaseMessage]], Union[BaseMessage, list[BaseMessage]]]
 
 def real_user_node(_: list[BaseMessage]) -> Union[BaseMessage, list[BaseMessage]]:
     return HumanMessage(content=FINISH)
+
+
+def date_assistant_builder():
+    date_assistant = create_date_assistant()
+
+    def fn(query: str):
+        response = date_assistant.invoke({"input": query})
+        return response
+
+    date_assistant_builder.__annotations__ = fn.__annotations__
+    date_assistant_builder.__name__ = fn.__name__
+    return fn
 
 
 class HotelReservationsAssistantDependencies:
@@ -70,6 +83,15 @@ def assistant_agent(
             func=dependencies.make_reservation,
             name="make_reservation",
             description="Useful to make a reservation.",
+        ),
+        StructuredTool.from_function(
+            func=date_assistant_builder(),
+            name="date_assistant",
+            description="""
+            Useful to calculate dates.
+            The query should be in natural language and it MUST include explicitly the today's date.
+            Example: 'Today is 2024-02-03, what day is 3 days from now?'
+            """,
         ),
     ]
     agent: Any = create_openai_functions_agent(dependencies.llm, tools, prompt)
