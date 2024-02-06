@@ -150,4 +150,7 @@ You should always ask the user for the information needed to make the reservatio
 Consider weekends to be from Friday to Sunday.
 
 The name of the guest is mandatory, you nust ask for it.
+
+You should always confirm the reservation with the user before making it.
+
 """

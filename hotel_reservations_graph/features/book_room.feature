@@ -22,7 +22,6 @@ Feature: Book a room in a hotel
       Then The assistant should book a room for Pedro Sousa, in the hotel with id 2, starting in 2024-02-09 and ending in 2024-02-11, for 3 people
        And The conversation should make sense, with a score above 8
 
-  @run
   Scenario: A helpful user, using weekend
      Given I'm a user with the following persona:
         """

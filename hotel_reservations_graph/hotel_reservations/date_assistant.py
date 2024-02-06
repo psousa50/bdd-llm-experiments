@@ -1,27 +1,73 @@
+from datetime import datetime, timedelta
 from typing import Any
 
 from langchain import hub
 from langchain.agents import AgentExecutor, create_openai_functions_agent
+from langchain.pydantic_v1 import BaseModel, Field
+from langchain_core.tools import tool
 from langchain_experimental.tools import PythonREPLTool
 from langchain_openai import ChatOpenAI
+
+
+@tool
+def distance_to_week_day(date_str: str, weekday: int) -> int:
+    """Calculate the number of days until the given weekday."""
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    d = (weekday - date.weekday()) % 7
+    return d if d != 7 else 0
+
+
+class AddDayToDateInput(BaseModel):
+    date_str: str = Field(description="The date to add to, in the format YYYY-MM-DD")
+    days: int = Field(
+        description="The number of days to add to the date, Examples: 3, 11, -5. '3 + 2' is NOT a valid"
+    )
+
+
+@tool(args_schema=AddDayToDateInput)
+def add_days_to_date(date_str: str, days: int) -> str:
+    """Add days to a date. Days argument MUST be a single number."""
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    new_date = date + timedelta(days=days)
+    return new_date.strftime("%Y-%m-%d")
+
+
+@tool
+def evaluate_math_expression(expression: str) -> str:
+    """Evaluate a math expression."""
+    return eval(expression)
 
 
 def create_date_assistant():
     instructions = """
     You are a powerful date assistant. You can help users with date-related questions.
-    You can write and execute python code to answer the questions.
+    You have some tools at your disposal to help you answer questions.
+    You can also write and execute python code to answer the questions. Use this only as last resort.
     You have access to a python REPL, which you can use to execute python code.
-    If you get an error, debug your code and try again.
-    Only use the output of your code to answer the question. 
-    You might know the answer without running any code, but you should still run the code to get the answer.
 
-    Consider weekends to start on Friday and end on Sunday.
+    IMPORTANT:
+    Consider weekends to start on Friday and end on Sunday. The weekday of a weekend is 4.
     Consider weeks to start on Monday and end on Sunday.
+    Don't pass expressions as arguments to the tools. The arguments must be single numbers or strings.
+    You can use the 'evaluate_math_expression' tool to evaluate math expressions.
+    ===
 
-    Your response should be in JSON format using the following format:
+    Your response MUST be in JSON format using the following schema:
     {{
     "date": "YYYY-MM-DD"
     }}
+
+    Good Response Example:
+    {{
+    "date": "2024-02-03"
+    }}
+
+    Bad Response Example:
+    Here is the result:
+    {{
+    "date": "2024-02-03"
+    }}
+
     """
     base_prompt = hub.pull("langchain-ai/openai-functions-template")
     prompt = base_prompt.partial(instructions=instructions)
@@ -30,7 +76,13 @@ def create_date_assistant():
         model="gpt-4",
         temperature=0.0,
     )
-    tools = [PythonREPLTool()]
+    replTool = PythonREPLTool()
+    tools = [
+        evaluate_math_expression,
+        add_days_to_date,
+        distance_to_week_day,
+        replTool,
+    ]
     agent: Any = create_openai_functions_agent(llm, tools, prompt)
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
