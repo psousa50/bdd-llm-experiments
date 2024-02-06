@@ -81,3 +81,4 @@ Feature: Book a room in a hotel
 
       Then The assistant should book a room for Pedro Sousa, in the hotel with id 34, starting in 2019-05-02 and ending in 2019-05-07, for 4 people
        And The conversation should make sense, with a score above 8
+

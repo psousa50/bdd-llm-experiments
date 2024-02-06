@@ -5,7 +5,21 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
 
-def llm_user(persona: str):
+class LLMUserOptions:
+    def __init__(
+        self,
+        model: str = "gpt-4",
+        temperature: float = 0.0,
+    ) -> None:
+        self.model = model
+        self.temperature = temperature
+
+
+def default_llm(options: LLMUserOptions):
+    return ChatOpenAI(model=options.model, temperature=options.temperature)
+
+
+def llm_user(persona: str, options=LLMUserOptions(), llm=None):
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", LLM_USER_PROMPT),
@@ -13,8 +27,9 @@ def llm_user(persona: str):
         ]
     )
     prompt = prompt.partial(persona=persona)
-    model = ChatOpenAI(model="gpt-4")
-    return prompt | model
+    if llm is None:
+        llm = default_llm(options)
+    return prompt | llm
 
 
 def _swap_roles(messages):

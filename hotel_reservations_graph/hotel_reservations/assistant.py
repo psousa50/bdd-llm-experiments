@@ -21,13 +21,6 @@ FINISH = "FINISH"
 logger = logging.getLogger(__name__)
 
 
-def default_llm():
-    return ChatOpenAI(
-        model="gpt-4",
-        temperature=0.0,
-    )
-
-
 def current_date():
     return datetime.now().date()
 
@@ -39,14 +32,31 @@ def real_user_node(_: list[BaseMessage]) -> Union[BaseMessage, list[BaseMessage]
     return HumanMessage(content=FINISH)
 
 
+class DependenciesOptions:
+    def __init__(
+        self,
+        model: str = "gpt-4",
+        temperature: float = 0.0,
+    ) -> None:
+        self.model = model
+        self.temperature = temperature
+
+
+def default_llm(options: DependenciesOptions):
+    return ChatOpenAI(model=options.model, temperature=options.temperature)
+
+
 class HotelReservationsAssistantDependencies:
     def __init__(
         self,
         make_reservation=make_reservation,
         find_hotels=find_hotels,
         current_date=current_date,
-        llm=default_llm(),
+        options=DependenciesOptions(),
+        llm=None,
     ) -> None:
+        if llm is None:
+            llm = default_llm(options)
         self.make_reservation = make_reservation
         self.find_hotels = find_hotels
         self.current_date = current_date
@@ -90,7 +100,6 @@ def hotel_assistant_node(agent, messages: list[BaseMessage]):
 
 
 def date_assistant_node(date_assistant, messages: list[BaseMessage]):
-    print("messages2", messages)
     last_message = messages[-1].content
     result = date_assistant.invoke({"input": last_message})
     return AIMessage(content=result["output"])
@@ -125,7 +134,7 @@ def hotel_reservations_assistant(
     workflow = MessageGraph()
 
     agent = assistant_agent(dependencies)
-    date_assistant = create_date_assistant()
+    date_assistant = create_date_assistant(llm=dependencies.llm)
 
     workflow.add_node(HOTEL_ASSISTANT, functools.partial(hotel_assistant_node, agent))
     workflow.add_node(
@@ -165,9 +174,7 @@ Today is {current_date}.
 
 You should always ask the user for the information needed to make the reservation, don't guess it.
 
-Consider weekends to be from Friday to Sunday.
-
-The name of the guest is mandatory, you nust ask for it.
+The name of the guest is mandatory, you must ask for it.
 
 You should use the DATE_ASSISTANT to help you with date-related questions.
 The DATE_ASSISTANT is NOT a tool function, don't try to call it as a tool function.

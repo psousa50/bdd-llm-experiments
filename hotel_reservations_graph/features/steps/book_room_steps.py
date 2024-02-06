@@ -10,6 +10,7 @@ from tests.llm_user import llm_user, llm_user_node
 from tests.mocks import create_mock
 
 from hotel_reservations.assistant import (
+    DependenciesOptions,
     HotelReservationsAssistantDependencies,
     hotel_reservations_assistant,
 )
@@ -52,10 +53,13 @@ def step_impl(context):  # noqa F811
 
 @when("I start a conversation with an Assistant")
 def step_impl(context):  # noqa F811
+
+    model = "gpt-3.5-turbo-0125"
     dependencies = HotelReservationsAssistantDependencies(
         find_hotels=create_mock(find_hotels, return_value=context.hotels),
         make_reservation=create_mock(make_reservation),
         current_date=lambda: context.current_date,
+        options=DependenciesOptions(model=model),
     )
     user = llm_user_node(llm_user(context.persona))
     context.assistant = hotel_reservations_assistant(

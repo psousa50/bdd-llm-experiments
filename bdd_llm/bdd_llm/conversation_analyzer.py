@@ -31,8 +31,6 @@ class ConversationAnalyzer:
 PROMPT = """
 You are a conversational analyst. You are given a conversation between a user and an assistant.
 Your task is to analyze the conversation to check if the assistant is answering the user's questions correctly.
-Take special attention to the following points:
-    - Dates are corectly handled and calculated.
 
 Your response should be in JSON format using the following structure:
 {{

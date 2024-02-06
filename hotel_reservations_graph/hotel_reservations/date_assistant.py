@@ -38,7 +38,21 @@ def evaluate_math_expression(expression: str) -> str:
     return eval(expression)
 
 
-def create_date_assistant():
+class DateAssistantOptions:
+    def __init__(
+        self,
+        model: str = "gpt-4",
+        temperature: float = 0.0,
+    ) -> None:
+        self.model = model
+        self.temperature = temperature
+
+
+def default_llm(options: DateAssistantOptions):
+    return ChatOpenAI(model=options.model, temperature=options.temperature)
+
+
+def create_date_assistant(options=DateAssistantOptions(), llm=None):
     instructions = """
     You are a powerful date assistant. You can help users with date-related questions.
     You have some tools at your disposal to help you answer questions.
@@ -47,6 +61,7 @@ def create_date_assistant():
 
     IMPORTANT:
     Consider weekends to start on Friday and end on Sunday. The weekday of a weekend is 4.
+    Monday=0, Tuesday=1, Wednesday=2, Thursday=3, Friday=4, Saturday=5, Sunday=6
     Consider weeks to start on Monday and end on Sunday.
     Don't pass expressions as arguments to the tools. The arguments must be single numbers or strings.
     You can use the 'evaluate_math_expression' tool to evaluate math expressions.
@@ -72,10 +87,9 @@ def create_date_assistant():
     base_prompt = hub.pull("langchain-ai/openai-functions-template")
     prompt = base_prompt.partial(instructions=instructions)
 
-    llm = ChatOpenAI(
-        model="gpt-4",
-        temperature=0.0,
-    )
+    if llm is None:
+        llm = default_llm(options)
+
     replTool = PythonREPLTool()
     tools = [
         evaluate_math_expression,
