@@ -1,4 +1,5 @@
 import functools
+import logging
 from datetime import datetime
 from typing import Any, Callable, Union
 
@@ -12,7 +13,12 @@ from langgraph.graph import END, MessageGraph
 from hotel_reservations.core import find_hotels, make_reservation
 from hotel_reservations.date_assistant import create_date_assistant
 
+HOTEL_ASSISTANT = "HOTEL_ASSISTANT"
+DATE_ASSISTANT = "DATE_ASSISTANT"
+USER = "USER"
 FINISH = "FINISH"
+
+logger = logging.getLogger(__name__)
 
 
 def default_llm():
@@ -31,18 +37,6 @@ User = Callable[[list[BaseMessage]], Union[BaseMessage, list[BaseMessage]]]
 
 def real_user_node(_: list[BaseMessage]) -> Union[BaseMessage, list[BaseMessage]]:
     return HumanMessage(content=FINISH)
-
-
-def date_assistant_builder():
-    date_assistant = create_date_assistant()
-
-    def fn(query: str):
-        response = date_assistant.invoke({"input": query})
-        return response
-
-    date_assistant_builder.__annotations__ = fn.__annotations__
-    date_assistant_builder.__name__ = fn.__name__
-    return fn
 
 
 class HotelReservationsAssistantDependencies:
@@ -84,31 +78,39 @@ def assistant_agent(
             name="make_reservation",
             description="Useful to make a reservation.",
         ),
-        StructuredTool.from_function(
-            func=date_assistant_builder(),
-            name="date_assistant",
-            description="""
-            Useful to calculate dates.
-            The query should be in natural language and it MUST include explicitly the today's date.
-            Example: 'Today is 2024-02-03, what day is 3 days from now?'
-            """,
-        ),
     ]
     agent: Any = create_openai_functions_agent(dependencies.llm, tools, prompt)
     executor = AgentExecutor(agent=agent, tools=tools)
     return executor
 
 
-def assistant_node(agent, messages: list[BaseMessage]):
+def hotel_assistant_node(agent, messages: list[BaseMessage]):
     result = agent.invoke({"messages": messages})
     return AIMessage(content=result["output"])
 
 
-def should_continue(max_iterations: int, messages):
+def date_assistant_node(date_assistant, messages: list[BaseMessage]):
+    print("messages2", messages)
+    last_message = messages[-1].content
+    result = date_assistant.invoke({"input": last_message})
+    return AIMessage(content=result["output"])
+
+
+def from_user(max_iterations: int, messages):
     if len(messages) > max_iterations:
         return "end"
     elif messages[-1].content == FINISH:
         return "end"
+    else:
+        return "continue"
+
+
+def from_assistant(max_iterations: int, messages: list[BaseMessage]):
+    print("messages", messages)
+    if len(messages) > max_iterations:
+        return "end"
+    elif DATE_ASSISTANT in messages[-1].content:
+        return DATE_ASSISTANT
     else:
         return "continue"
 
@@ -123,18 +125,34 @@ def hotel_reservations_assistant(
     workflow = MessageGraph()
 
     agent = assistant_agent(dependencies)
-    workflow.add_node("assistant", functools.partial(assistant_node, agent))
-    workflow.add_node("user", user)
-    workflow.set_entry_point("assistant")
-    workflow.add_edge("assistant", "user")
+    date_assistant = create_date_assistant()
+
+    workflow.add_node(HOTEL_ASSISTANT, functools.partial(hotel_assistant_node, agent))
+    workflow.add_node(
+        DATE_ASSISTANT, functools.partial(date_assistant_node, date_assistant)
+    )
+    workflow.add_node(USER, user)
+
+    workflow.add_edge(DATE_ASSISTANT, HOTEL_ASSISTANT)
     workflow.add_conditional_edges(
-        "user",
-        functools.partial(should_continue, options["max_iterations"]),
+        HOTEL_ASSISTANT,
+        functools.partial(from_assistant, options["max_iterations"]),
         {
             "end": END,
-            "continue": "assistant",
+            DATE_ASSISTANT: DATE_ASSISTANT,
+            "continue": USER,
         },
     )
+    workflow.add_conditional_edges(
+        USER,
+        functools.partial(from_user, options["max_iterations"]),
+        {
+            "end": END,
+            "continue": HOTEL_ASSISTANT,
+        },
+    )
+
+    workflow.set_entry_point(HOTEL_ASSISTANT)
 
     return workflow.compile()
 
@@ -150,6 +168,12 @@ You should always ask the user for the information needed to make the reservatio
 Consider weekends to be from Friday to Sunday.
 
 The name of the guest is mandatory, you nust ask for it.
+
+You should use the DATE_ASSISTANT to help you with date-related questions.
+The DATE_ASSISTANT is NOT a tool function, don't try to call it as a tool function.
+When you need to use the DATE_ASSISTANT, you should just respond with "DATE_ASSISTANT", followed by the query:
+Example:
+DATE_ASSISTANT: Today is 2024-02-03, what is the date 3 days from now?
 
 You should always confirm the reservation with the user before making it.
 
