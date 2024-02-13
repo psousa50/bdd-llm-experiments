@@ -1,6 +1,5 @@
 Feature: Find a date from a query
 
-  @run
   Scenario: Tomorrow's date
     Given I say
     """

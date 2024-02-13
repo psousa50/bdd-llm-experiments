@@ -10,7 +10,7 @@ verbose = True
 
 def test_query_with_all_the_information():
     # Given
-    user = LLMUser.from_config(
+    user = LLMUser.from_parts(
         goal="Book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb, for two guests",  # noqa E501
         persona="A helpful user",
     )
@@ -69,7 +69,7 @@ def test_query_with_all_the_information_full_prompt():
 
 def test_query_with_relative_dates():
     # Given
-    user = LLMUser.from_config(
+    user = LLMUser.from_parts(
         goal="Book a room in the Britannia International Hotel, for the next weekend, starting Friday, for me, my wife and our two kids",  # noqa E501
         persona="A helpful user",
         metadata={
@@ -104,7 +104,7 @@ def test_query_with_relative_dates():
 
 def test_query_with_no_information():
     # Given
-    user = LLMUser.from_config(
+    user = LLMUser.from_parts(
         goal="Book a room in a London Hotel, starting in 3 of February, for 3 days, for two guests. I prefer hotel UK 2",  # noqa E501
         persona="A helpful user",
         metadata={
@@ -137,7 +137,7 @@ def test_query_with_no_information():
 
 def test_slow_user_with_no_information():
     # Given
-    user = LLMUser.from_config(
+    user = LLMUser.from_parts(
         goal="Book a room in a London Hotel, starting in 3 of February, for 3 days, for two guests. I think the hotel anme is Plaza something",  # noqa E501
         persona="A slow user that cannot answer more than one question at a time",
         metadata={

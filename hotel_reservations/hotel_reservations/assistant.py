@@ -1,17 +1,40 @@
+import json
 import logging
 from typing import Any
 
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
+from langchain.pydantic_v1 import BaseModel, Field
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.tools import StructuredTool
+from langchain_core.tools import StructuredTool, tool
 from langchain_openai import ChatOpenAI
 
 from hotel_reservations.callbacks import LLMStartHandler
+from hotel_reservations.date_assistant import create_date_assistant
 from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
 
 logger = logging.getLogger(__name__)
+
+date_assistant = create_date_assistant()
+
+
+class DateAssistantInput(BaseModel):
+    query: str = Field(
+        description="""
+            The input to the date assistant. It should be in natural language and it MUST include the current date.
+            Example: "Today is 2024-04-01. What day is tomorrow?"
+        """
+    )
+
+
+@tool(args_schema=DateAssistantInput)
+def date_assistant_tool(query: str) -> str:
+    """Useful to calculate dates."""
+    result = date_assistant.invoke({"input": query})
+    print(result)
+    json_result = json.loads(result["output"])
+    return json_result["date"]
 
 
 class HotelReservationsAssistant:
@@ -96,11 +119,12 @@ class HotelReservationsAssistant:
                 name="make_reservation",
                 description="Useful to make a reservation.",
             ),
-            StructuredTool.from_function(
-                func=dependencies.calc_reservation_price,
-                name="calc_reservation_price",
-                description="Useful to calculate the price of a reservation.",
-            ),
+            date_assistant_tool,
+            # StructuredTool.from_function(
+            #     func=dependencies.calc_reservation_price,
+            #     name="calc_reservation_price",
+            #     description="Useful to calculate the price of a reservation.",
+            # ),
         ]
         return tools
 
@@ -113,6 +137,8 @@ The name of the guest is mandatory to make the reservation.
 Today is {current_date}.
 
 Consider weekends to start at Friday and end at Sunday.
+
+A stay of 2 days starting today ends the day after tomorrow.
 
 You should always confirm the reservation with the user before making it.
 
