@@ -30,7 +30,6 @@ def chat_fn(assistant):
 
 
 def test_hotel_reservations_assistant():
-
     hotels = (
         [
             Hotel(234, "Park Grand London Kensington", "London"),

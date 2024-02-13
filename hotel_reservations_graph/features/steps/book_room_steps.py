@@ -53,7 +53,6 @@ def step_impl(context):  # noqa F811
 
 @when("I start a conversation with an Assistant")
 def step_impl(context):  # noqa F811
-
     dependencies = HotelReservationsAssistantDependencies(
         find_hotels=create_mock(find_hotels, return_value=context.hotels),
         make_reservation=create_mock(make_reservation),
