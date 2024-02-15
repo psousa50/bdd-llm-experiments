@@ -8,8 +8,10 @@ class ConversationAnalyzer:
     def __init__(self):
         self.llm = self.build_llm()
 
-    def invoke(self, chat_history: list[BaseMessage]):
-        response = self.llm.invoke({"chat_history": chat_history})
+    def invoke(self, chat_history: list[BaseMessage], criteria: list[str] = []):
+        response = self.llm.invoke(
+            {"chat_history": chat_history, "criteria": "\n".join(criteria)}
+        )
         return response
 
     def build_llm(self):
@@ -31,12 +33,16 @@ class ConversationAnalyzer:
 PROMPT = """
 You are a conversational analyst. You are given a conversation between a user and an assistant.
 Your task is to analyze the conversation to check if the assistant is answering the user's questions correctly.
+You should also check all the criterias specified in the criteria list.
 
 Your response should be in JSON format using the following structure:
 {{
     "score": <0..9>
     "feedback": "Your feedback here"
 }}
+
+Criteria:
+{criteria}
 
 Conversation:
 {chat_history}

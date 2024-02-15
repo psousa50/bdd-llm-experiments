@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -29,7 +28,8 @@ def start():
         persona="""
         My name is Pedro Sousa and I'm a helpful user.
         I want to book a room in London, starting in May 2 and ending in May 7
-        It will be for 4 guests
+        It will be for 4 guests.
+        I prefer UK 2
         """,  # noqa E501
     )
 
@@ -41,7 +41,7 @@ def start():
     )
     assistant = HotelReservationsAssistant(dependencies, verbose=verbose)
 
-    query = "I want to book a room"
+    query = "Hi"
     conversation = UserConversation(
         user=user,
         assistant=chat_fn(assistant),
@@ -57,9 +57,19 @@ def start():
         print(log)
 
     conversationAnalyzer = ConversationAnalyzer()
-    response = conversationAnalyzer.invoke(conversation.state.chat_history)
-    response_json = json.loads(response.content)
-    print(response_json)
+    response = conversationAnalyzer.invoke(
+        conversation.state.chat_history,
+        criteria=[
+            "The assistant should greet the user",
+            "The assistant should ask for the user name if needed",
+            "The assistant should ask for the location of the hotel",
+            "The assistant should ask for the check-in date",
+            "The assistant should ask for the check-out date",
+            "The assistant should ask for the number of guests",
+            "The assistant should book a room for Pedro Sousa, hotel with id 2, checkin May 2, checkout May 7, for 4 guests",
+        ],
+    )
+    print(response)
 
 
 def bye(state):

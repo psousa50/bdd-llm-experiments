@@ -85,12 +85,16 @@ def step_impl(  # noqa F811
     )
 
 
-@then("The conversation should make sense, with a score above {score}")
+@then(
+    "The conversation should fullfill the following criteria, with a score above {score}"
+)
 def step_impl(context, score):  # noqa F811
+    criteria = context.text.split("\n")
+    criteria = [c.strip() for c in criteria if c.strip()]
     conversationAnalyzer = ConversationAnalyzer()
     current_date = AIMessage(content=f"Today is {context.current_date}")
     chat_history = [current_date] + context.conversation.state.chat_history
-    response = conversationAnalyzer.invoke(chat_history)
+    response = conversationAnalyzer.invoke(chat_history=chat_history, criteria=criteria)
     assert_that(
         int(response["score"]),
         greater_than(int(score)),

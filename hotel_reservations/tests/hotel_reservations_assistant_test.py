@@ -1,9 +1,12 @@
 import datetime
 
+from dotenv import load_dotenv
 from tests.helpers import create_test_conversation
 
 from bdd_llm.llm_user import LLMUser
 from hotel_reservations.core import Hotel
+
+load_dotenv()
 
 verbose = True
 
@@ -11,12 +14,12 @@ verbose = True
 def test_query_with_all_the_information():
     # Given
     user = LLMUser.from_parts(
-        goal="Book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb, for two guests",  # noqa E501
+        goal="Book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb pf 2024, for two guests",  # noqa E501
         persona="A helpful user",
     )
     # When
     query = """
-    Hi, my name is Pedro Sousa. I want to book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb. It's for two guests.
+    Hi, my name is Pedro Sousa. I want to book a room in the Park Grand London Kensington hotel, for 3 days, starting 12 Feb of 2022. It's for two guests.
     """  # noqa E501
     conversation, dependencies = create_test_conversation(
         user,
@@ -33,8 +36,8 @@ def test_query_with_all_the_information():
     dependencies.make_reservation.assert_called_once_with(
         234,
         "Pedro Sousa",
-        datetime.date(2024, 2, 12),
-        datetime.date(2024, 2, 15),
+        datetime.date(2022, 2, 12),
+        datetime.date(2022, 2, 15),
         2,
     )
 
