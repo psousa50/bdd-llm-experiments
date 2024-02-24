@@ -1,16 +1,11 @@
 import json
-
-from dataclasses import dataclass
 import logging
-from datetime import date
 import random
+from dataclasses import dataclass
+from datetime import date
 from typing import Callable
 
 logger = logging.getLogger(__name__)
-
-MakeReservation = Callable[[str, str, date, date, int], bool]
-CalcReservationPrice = Callable[[str, date, date, int], int]
-FindHotels = Callable[[str], list[str]]
 
 
 @dataclass
@@ -26,6 +21,11 @@ class Hotel:
         return str(self)
 
 
+MakeReservation = Callable[[str, str, date, date, int], bool]
+CalcReservationPrice = Callable[[str, date, date, int], int]
+FindHotels = Callable[[str, str], list[Hotel]]
+
+
 hotels = [
     Hotel(1, "Hotel UK 1", "London"),
     Hotel(2, "Hotel UK 2", "London"),
@@ -36,7 +36,7 @@ hotels = [
 
 
 def make_reservation(
-    hotel_id: int,
+    hotel_id: str,
     guest_name: str,
     checkin_date: date,
     checkout_date: date,
@@ -49,7 +49,7 @@ def make_reservation(
 
 
 def calc_reservation_price(
-    hotel_id: int, checkin_date: date, checkout_date: date, guests: int
+    hotel_id: str, checkin_date: date, checkout_date: date, guests: int
 ):
     logger.info(
         f"Calculating reservation price for {hotel_id} from {checkin_date} to {checkout_date} for {guests} guests"

@@ -48,7 +48,7 @@ def step_impl(context):  # noqa F811
 
 @when("I start a conversation with an Assistant")
 def step_impl(context):  # noqa F811
-    user = LLMUser.from_persona(context.persona)
+    user = LLMUser.from_persona(context.persona, llm=context.llm)
     current_date_return_value = context.current_date
     conversation, dependencies = create_test_conversation(
         user,

@@ -8,11 +8,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 colorama = "^0.4.6"
-langchain = "^0.1.5"
-langchain-openai = "^0.0.5"
-langchain-core = "^0.1.18"
+langchain = "^0.1.9"
+langchain-openai = "^0.0.7"
+langchain-core = "^0.1.26"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+

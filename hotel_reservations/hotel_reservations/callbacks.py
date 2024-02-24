@@ -28,6 +28,20 @@ class LLMStartHandler(BaseCallbackHandler):
         """Run when Chat Model starts running."""
         logger.debug(f"on_chat_model_start: {messages}")
 
+    def on_chat_model_end(
+        self,
+        serialized: Dict[str, Any],
+        messages: List[List[BaseMessage]],
+        **kwargs: Any,
+    ) -> Any:
+        """Run when Chat Model ends running."""
+        logger.debug(f"on_chat_model_end: {messages}")
+
+    def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> Any:
+        """Run when Chain ends running."""
+
+        logger.debug(f"on_chain_end: {outputs}")
+
     def on_tool_start(
         self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
     ) -> Any:

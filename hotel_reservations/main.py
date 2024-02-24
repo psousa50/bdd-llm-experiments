@@ -1,12 +1,17 @@
 from datetime import datetime
 
 from dotenv import load_dotenv
+from langchain_core.tools import tool
+from langchain_core.utils.function_calling import convert_to_openai_function
+from langchain_experimental.llms.ollama_functions import OllamaFunctions
+from langchain_openai import ChatOpenAI  # noqa E402
 
 from bdd_llm.conversation_analyzer import ConversationAnalyzer
 from bdd_llm.llm_user import LLMUser
 from bdd_llm.mocks import create_mock
 from bdd_llm.runners import UserConversation
 from hotel_reservations.assistant import HotelReservationsAssistant
+from hotel_reservations.chat_open_router import ChatOpenRouter
 from hotel_reservations.core import make_reservation
 from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
 
@@ -24,6 +29,19 @@ def chat_fn(assistant: HotelReservationsAssistant):
 
 
 def start():
+    llm = ChatOpenRouter(
+        model="mistralai/mixtral-8x7b-instruct",
+        temperature=0.0,
+    )
+    llm = ChatOpenAI(
+        model="gpt-4-turbo-preview",
+        temperature=0.0,
+    )
+    # llm = OllamaFunctions(
+    #     model="llama2",
+    #     temperature=0,
+    # )  # type: ignore
+
     user = LLMUser.from_persona(
         persona="""
         My name is Pedro Sousa and I'm a helpful user.
@@ -31,6 +49,7 @@ def start():
         It will be for 4 guests.
         I prefer UK 2
         """,  # noqa E501
+        llm=llm,
     )
 
     wrapped_make_reservation = create_mock(make_reservation)
@@ -39,7 +58,7 @@ def start():
         make_reservation=wrapped_make_reservation,
         current_date=lambda: datetime(2024, 1, 23),
     )
-    assistant = HotelReservationsAssistant(dependencies, verbose=verbose)
+    assistant = HotelReservationsAssistant(llm, dependencies, verbose=verbose)
 
     query = "Hi"
     conversation = UserConversation(
@@ -50,25 +69,26 @@ def start():
     )
     conversation.start_conversation(query)
 
-    print(user.persona)
+    print(f"Persona:\n{user.persona}")
     print()
-    print(query)
-    for log in conversation.state.chat_history:
-        print(log)
+    print(f"Query:\n{query}")
+    for msg in conversation.state.chat_history:
+        print(msg.pretty_print())
 
     conversationAnalyzer = ConversationAnalyzer()
     response = conversationAnalyzer.invoke(
         conversation.state.chat_history,
         criteria=[
-            "The assistant should greet the user",
-            "The assistant should ask for the user name if needed",
-            "The assistant should ask for the location of the hotel",
-            "The assistant should ask for the check-in date",
-            "The assistant should ask for the check-out date",
-            "The assistant should ask for the number of guests",
-            "The assistant should book a room for Pedro Sousa, hotel with id 2, checkin May 2, checkout May 7, for 4 guests",
+            "greet the user",
+            "ask for the user name if needed",
+            "ask for the location of the hotel",
+            "ask for the check-in date",
+            "ask for the check-out date",
+            "ask for the number of guests",
+            "book a room for Pedro Sousa, hotel with id 2, checkin May 2, checkout May 7, for 4 guests",
         ],
     )
+    print("Analyzed conversation")
     print(response)
 
 

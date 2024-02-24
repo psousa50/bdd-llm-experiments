@@ -5,14 +5,19 @@ from typing import Any
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
 from langchain.pydantic_v1 import BaseModel, Field
+from langchain_core.language_models.base import BaseLanguageModel
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import RunnablePassthrough
 from langchain_core.tools import StructuredTool, tool
 from langchain_openai import ChatOpenAI
 
 from hotel_reservations.callbacks import LLMStartHandler
 from hotel_reservations.date_assistant import create_date_assistant
 from hotel_reservations.dependencies import HotelReservationsAssistantDependencies
+from hotel_reservations.function_call_agent_output_parser import (
+    FunctionCallAgentOutputParser,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +45,7 @@ def date_assistant_tool(query: str) -> str:
 class HotelReservationsAssistant:
     def __init__(
         self,
+        llm: BaseLanguageModel,
         dependencies=HotelReservationsAssistantDependencies(),
         verbose=False,
     ):
@@ -49,7 +55,7 @@ class HotelReservationsAssistant:
         self.chat_history = []
         self.handler = LLMStartHandler()
 
-        self.agent = self.build_agent(dependencies)
+        self.agent = self.build_agent(dependencies, llm)
 
     def invoke(self, query: str, session_id: str = "foo"):
         response = self.agent.invoke(
@@ -75,12 +81,8 @@ class HotelReservationsAssistant:
     def build_agent(
         self,
         dependencies: HotelReservationsAssistantDependencies,
+        llm: BaseLanguageModel,
     ):
-        llm = ChatOpenAI(
-            model="gpt-4",
-            temperature=0.0,
-            # openai_api_base="http://localhost:8000",
-        )
         tools = self.build_tools(dependencies)
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -93,7 +95,20 @@ class HotelReservationsAssistant:
         prompt = prompt.partial(current_date=str(self.dependencies.current_date()))
 
         logger.debug(f"Agent Prompt: {prompt}")
-        agent: Any = create_openai_functions_agent(llm, tools, prompt)
+
+        if isinstance(llm, ChatOpenAI):
+            agent: Any = create_openai_functions_agent(llm, tools, prompt)
+        else:
+            agent: Any = (
+                RunnablePassthrough.assign(
+                    agent_scratchpad=lambda x: format_to_openai_function_messages(
+                        x["intermediate_steps"]
+                    )
+                )
+                | prompt
+                | llm
+                | FunctionCallAgentOutputParser()
+            )
 
         agent_executor = AgentExecutor(
             agent=agent,
@@ -131,7 +146,7 @@ class HotelReservationsAssistant:
 
 SYSTEM_PROMPT = """
 You are a helpful hotel reservations assistant.
-You have a list of tools that you can use to help you make a reservation.
+
 The name of the guest is mandatory to make the reservation.
 
 Today is {current_date}.
@@ -142,4 +157,8 @@ A stay of 2 days starting today ends the day after tomorrow.
 
 You should always confirm the reservation with the user before making it.
 
+"""  # noqa E501
+
+SYSTEM_PROMPT_2 = """
+You are a helpful hotel reservations assistant.
 """  # noqa E501

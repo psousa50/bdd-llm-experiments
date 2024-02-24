@@ -7,18 +7,18 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pytest = "^8.0.0"
-langchain = "^0.1.4"
-langchain-core = "^0.1.17"
-langchain-openai = "^0.0.5"
-langchainhub = "^0.1.14"
 bdd-llm = {path = "../bdd_llm", develop = true}
+pytest = "^8.0.0"
 colorama = "^0.4.6"
 behave = "^1.2.6"
 pyhamcrest = "^2.1.0"
 python-dotenv = "^1.0.1"
-langchain-experimental = "^0.0.50"
-langchain-community = "^0.0.19"
+langchain = "^0.1.9"
+langchain-core = "^0.1.26"
+langchain-openai = "^0.0.7"
+langchainhub = "^0.1.14"
+langchain-experimental = "^0.0.52"
+langchain-community = "^0.0.24"
 langchain-together = "^0.0.2.post1"
 
 

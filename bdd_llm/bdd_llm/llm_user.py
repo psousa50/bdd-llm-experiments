@@ -1,5 +1,6 @@
 import logging
 
+from langchain_core.language_models.base import BaseLanguageModel
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import (
@@ -24,7 +25,9 @@ def default_llm():
 
 class LLMUser(UserProxy):
     @classmethod
-    def from_parts(cls, goal: str, persona: str, metadata: dict = {}, llm=None):
+    def from_parts(
+        cls, llm: BaseLanguageModel, goal: str, persona: str, metadata: dict = {}
+    ):
         prompt = LLMUser.build_persona_prompt(goal, persona, metadata)
         return cls(prompt, llm)
 
@@ -45,9 +48,7 @@ class LLMUser(UserProxy):
     def format_metadata(metadata):
         return "\n".join([f"{k}: {v}" for k, v in metadata.items()])
 
-    def __init__(self, persona, llm=None):
-        if llm is None:
-            llm = default_llm()
+    def __init__(self, persona, llm):
         template = PromptTemplate.from_template(BASE_USER_PROMPT)
         prompt = template.format(persona=persona)
         self.persona = persona
@@ -60,6 +61,8 @@ class LLMUser(UserProxy):
             {"input": query, "chat_history": self.chat_history},
             config={"callbacks": [self.handler]},
         )
+        # print(f"type(response): {type(response)}")
+        # print(f"response: {response}")
         self.chat_history.append(HumanMessage(content=query))
         self.chat_history.append(AIMessage(content=response))
         return response
@@ -83,6 +86,7 @@ BASE_USER_PROMPT = """
     Your role is to simulate a user that asked an Assistant to do a task. Remember, you are not the Assistant, you are the user.
     If you don't know the answer, just pick a random one.
 
+    Here is some information about you:
     {persona}
 
     When the LLM finishes the task, it will not ask a question, it will just give you the result.

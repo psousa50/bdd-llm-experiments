@@ -1,3 +1,4 @@
+import functools
 import time
 from datetime import date, timedelta
 from random import choice
@@ -5,6 +6,7 @@ from typing import Callable
 
 from dotenv import load_dotenv
 from hamcrest import assert_that, less_than
+from langchain_core.language_models.base import BaseLanguageModel
 
 from bdd_llm.llm_user import LLMUser
 from bdd_llm.mocks import create_mock
@@ -19,6 +21,7 @@ from hotel_reservations.dependencies import (
     HotelReservationsAssistantDependencies,
     current_date,
 )
+from hotel_reservations.hotel_reservations.chat_open_router import ChatOpenRouter
 
 load_dotenv()
 
@@ -80,8 +83,10 @@ class Users:
         return self
 
     def build_llm_users(self, goal):
+        llm = build_llm()
         self.llm_users = [
             LLMUser.from_parts(
+                llm=llm,
                 persona=user.persona,
                 metadata=user.metadata,
                 goal=goal,
@@ -220,7 +225,10 @@ def create_dependencies(
     return dependencies
 
 
-def build_assistant(scenario: Scenario) -> tuple[Assistant, dict]:
+def build_assistant(
+    llm: BaseLanguageModel,
+    scenario: Scenario,
+) -> tuple[Assistant, dict]:
     dependencies = HotelReservationsAssistantDependencies(
         find_hotels=create_mock(find_hotels, return_value=scenario["hotels"]),
         make_reservation=create_mock(make_reservation, return_value=True),
@@ -231,7 +239,7 @@ def build_assistant(scenario: Scenario) -> tuple[Assistant, dict]:
         current_date_return_value=scenario["current_date"],
     )
 
-    assistant = HotelReservationsAssistant(dependencies)
+    assistant = HotelReservationsAssistant(llm=llm, dependencies=dependencies)
 
     def assistant_fn(query: str) -> str:
         response = assistant.invoke(query)
@@ -266,7 +274,7 @@ def talk_to_book_a_room_with_all_the_information():
         Talk()
         .given(scenario)
         .using(users.cycle())
-        .talking_to(build_assistant)
+        .talking_to(llm_build_assistant())
         .saying("I want to book a room")
         .should(
             lambda state: state.context[
@@ -309,7 +317,7 @@ def talk_to_book_a_room_with_relative_dates():
         Talk()
         .given(scenario)
         .using(users)
-        .talking_to(build_assistant)
+        .talking_to(llm_build_assistant())
         .saying("I want to book a room")
         .should(
             lambda state: state.context[
@@ -352,7 +360,7 @@ def talk_to_book_a_room_for_next_thursday():
         Talk()
         .given(scenario)
         .using(users)
-        .talking_to(build_assistant)
+        .talking_to(llm_build_assistant())
         .saying("I want to book a room")
         .should(
             lambda state: state.context[
@@ -392,6 +400,19 @@ def start():
     print(f"Total runs: {total_runs}")
     print(f"Total fails: {total_fails}")
     print(f"Failure rate: {total_fails / total_runs}")
+
+
+def build_llm():
+    llm = ChatOpenRouter(
+        model="cognitivecomputations/dolphin-mixtral-8x7b",
+        temperature=0.0,
+    )
+    return llm
+
+
+def llm_build_assistant():
+    llm = build_llm()
+    return functools.partial(build_assistant, llm)
 
 
 if __name__ == "__main__":
